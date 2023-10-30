@@ -8,12 +8,12 @@ public class Parking extends Place {
 
     public Parking(String name, int volume) {
         super(name, volume);
-        this.availableSpace = this.volume;
+        this.availableSpace = volume;
     }
 
-    public Parking(String name, int height, int width, int length) throws ParseException {
+    public Parking(String name, int height, int width, int length) {
         super(name, height, width, length);
-        this.availableSpace = this.volume;
+        this.availableSpace = volume;
     }
 
     public void storeThing(Thing thing) throws TooManyThingsException {

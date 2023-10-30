@@ -1,4 +1,3 @@
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -29,7 +28,7 @@ public class Person {
             else {
                 place.livingPersons.add(person);
                 Person.allExistingPersons.add(person);
-                System.out.println( "Person " + person.name + "is successfully added");
+                System.out.println("Person " + person.name + "is successfully added");
             }
         } else
             System.out.println("You don't have possibility to register the person");
@@ -70,7 +69,7 @@ public class Person {
             System.out.println("You don't have possibility to put the thing");
     }
 
-    public void renewRental(Place place, String rentEnd) throws ParseException {
+    public void renewRental(Place place, String rentEnd) {
         if (this.isTenant && this.rentedPlaces.contains(place)) {
             for (TenantLetter tenantLetter : place.tenant.letters) {
                 if (tenantLetter.place == place && tenantLetter.tenantName.equals(place.tenant.name)) {

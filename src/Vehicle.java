@@ -1,12 +1,12 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//implements Amphibian, Boat, CityCar, Motorcycle
 class Vehicle extends Thing {
-    private int engineCapacity;
-    private String vehicleType, engineType;
-    private final String[] availableTypes = {"Boat", "City Car", "Motorcycle", "Off Road", "Amphibian"};
-    public static List<Thing> soldVehicles;
+    public int engineCapacity;
+    public String vehicleType, engineType;
+    public static final String[] availableTypes = {"Boat", "City Car", "Motorcycle", "Off Road", "Amphibian"};
+    public static List<Thing> soldVehicles = new ArrayList<>();
 
     public Vehicle(String name, int area, int engineCapacity, String vehicleType, String engineType) {
         super(name, area);

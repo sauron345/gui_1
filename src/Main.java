@@ -1,4 +1,3 @@
-import javax.print.attribute.standard.MediaPrintableArea;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -12,12 +11,12 @@ class Main extends Thread {
     public static List<Person> persons;
     public static Scanner scan = new Scanner(System.in);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws TooManyThingsException {
         Main.currDate = LocalDate.now();
 
-        Estate zoliborz = new Estate("Żoliborz");
-        List<Estate> estates = new ArrayList<>();
-        estates.add(zoliborz);
+        Developer dev = new Developer("Patryk");
+        Estate estate = new Estate("Żoliborz");
+        dev.addEstate(estate);
 
         Person person = new Person("Sebastian", "Wieczorek", "1236432212", "2002-11-30", "Przasnyska 23a");
         Person person2 = new Person("Damian", "Mołdawski", "423423234", "2002-09-23", "Kwiatkowskiego 1c");
@@ -46,30 +45,64 @@ class Main extends Thread {
             apartment, apartment2, apartment3, apartment4, apartment5, apartment6,
             parking, parking2, parking3, parking4
         );
-
-        zoliborz.addPlace(places);
+        estate.addPlace(places);
 
         Main main = new Main();
 
-        Main.loop(main, scan, estates);
-
+        Main.loop(main, scan, dev);
     }
 
-    private static void loop(Main main, Scanner scan, List<Estate> estates) {
+    private static Estate createEstate() {
+        List<String> placeData = Main.enterEstateName();
+        return new Estate(placeData.get(0));
+    }
+
+    private static List<String> enterEstateName() {
+        System.out.print("Enter estate name: ");
+        String name = Main.scan.next();
+
+        return Arrays.asList(name);
+    }
+
+    private static void loop(Main main, Scanner scan, Developer dev) throws TooManyThingsException {
         int choice;
 
         while (true) {
             main.run();
 
             System.out.println("\nSelect estate:");
-            for (int i = 0; i < estates.size(); i++)
-                System.out.println(i + " - " + estates.get(i).name);
+            System.out.println("20 - add estate");
+            if (Estate.allExistingEstates.size() > 0) {
+                System.out.println("21 - remove estate");
+                System.out.println("------------------");
+                System.out.println("Existing estates:");
+            }
+            for (int i = 0; i < dev.estates.size(); i++)
+                System.out.println(i + " - " + dev.estates.get(i).name);
             choice = scan.nextInt();
 
-            Estate selEstate = estates.get(choice);
+            Estate selEstate;
+            if (choice == 20) {
+                selEstate = Main.createEstate();
+                dev.addEstate(selEstate);
+            } else if (choice == 21 && Estate.allExistingEstates.size() > 0) {
+                selEstate = Main.findExistingEstate();
+                if (selEstate != null)
+                    dev.removeEstate(selEstate);
+                continue;
+            } else
+                selEstate = dev.estates.get(choice);
 
             System.out.println("\nSelect place of " + selEstate.name + ":");
-            System.out.println("20 - Add new place ");
+            if (selEstate.places.isEmpty())
+                System.out.println("No places available yet");
+
+            System.out.println("20 - Add new place");
+            if (Estate.allExistingEstates.size() > 0) {
+                System.out.println("21 - remove place");
+                System.out.println("------------------");
+                System.out.println("Existing places:");
+            }
             for (int i = 0; i < selEstate.places.size(); i++)
                 System.out.println(i + " - " + selEstate.places.get(i).name);
             choice = scan.nextInt();
@@ -77,55 +110,140 @@ class Main extends Thread {
             if (choice == 20) {
                 Place placeCreated = Main.createPlace();
                 selPlace = selEstate.addPlace(placeCreated);
+            } else if (choice == 21 && Estate.allExistingEstates.size() > 0) {
+                selPlace = Main.findExistingPlace();
+                if (selPlace != null)
+                    selEstate.removePlace(selPlace);
+                continue;
             } else
                 selPlace = selEstate.places.get(choice);
 
             if (selPlace instanceof Apartment) {
                 System.out.println("\nSelect person living in " + selPlace.name + " :");
                 System.out.println("15 - Apartment details");
-                if (selPlace.livingPersons.size() == 0) {
+                if (selPlace.livingPersons.isEmpty()) {
                     System.out.println("No one");
                     System.out.println("9 - Add tenant");
-                } else
+                } else {
+                    System.out.println("------------------");
+                    System.out.println("Living persons:");
                     for (int i = 0; i < selPlace.livingPersons.size(); i++) {
                         if (selPlace.livingPersons.get(i).isTenant)
-                            System.out.println(i + " - (Tenant)" + selPlace.livingPersons.get(i).name);
+                            System.out.println(i + " - (Tenant) " + selPlace.livingPersons.get(i).name);
                         else
                             System.out.println(i + " - " + selPlace.livingPersons.get(i).name);
                     }
+                }
                 choice = scan.nextInt();
                 Person selPerson;
                 if (choice == 15) {
                     Main.showPlaceDetails(selPlace);
-                } else if (selPlace.livingPersons.size() == 0 && choice == 9) {
-                    Main.addTenant((Apartment) selPlace);
+                } else if (selPlace.livingPersons.isEmpty() && choice == 9) {
+                    Main.addApartTenant((Apartment) selPlace);
                 } else {
                     selPerson = selPlace.livingPersons.get(choice);
                     System.out.println("Selected person: " + selPerson.name);
-                    Main.selPersonActions(selPerson);
+                    Main.selPersonActions(selPerson, selPlace);
                 }
             } else if (selPlace instanceof Parking) {
                 System.out.println("\nSelect thing stored in " + selPlace.name + ":");
                 System.out.println("15 - Parking details");
-                if (((Parking) selPlace).storedThings.size() == 0) {
+                if (selPlace.tenant == null)
+                    System.out.println("9 - Add tenant");
+                else if (((Parking) selPlace).storedThings.isEmpty()) {
                     System.out.println("Nothing stored yet");
-                    System.out.println("9 - Add thing");
-                } else
+                } else {
+                    System.out.println("------------------");
+                    System.out.println("Tenant - " + selPlace.tenant.name);
+                    System.out.println("20 - Add thing");
                     for (int i = 0; i < ((Parking) selPlace).storedThings.size(); i++)
-                        System.out.println(i + " - " + ((Parking) selPlace).storedThings.get(i));
+                        System.out.println(i + " - " + ((Parking) selPlace).storedThings.get(i).name);
+                }
                 choice = scan.nextInt();
-                Person selPerson;
+                Thing selThing;
                 if (choice == 15) {
                     Main.showPlaceDetails(selPlace);
                 } else if (choice == 9)
+                    Main.addParkingTenant((Parking) selPlace);
+                else if (choice == 20)
                     Main.addThing((Parking) selPlace);
                 else {
-                    selPerson = selPlace.livingPersons.get(choice);
-                    System.out.println("Selected person: " + selPerson.name);
-                    Main.selPersonActions(selPerson);
+                    selThing = ((Parking) selPlace).storedThings.get(choice);
+                    System.out.println("Selected thing: " + selThing.name);
+                    Main.showThingDetails(selThing);
                 }
             }
             Main.i++;
+        }
+    }
+
+    private static Place findExistingPlace() {
+        List<String> estateData = Main.enterPlaceName();
+        int same = 0;
+        for (Place place : Place.allExistingPlaces) {
+            if (place.name.equals(estateData.get(0)))
+                same++;
+            else if (place.name.equals(estateData.get(1)))
+                same++;
+            if (same == 2)
+                return place;
+        }
+        System.out.println("Entered place is not exists");
+        return null;
+    }
+
+    private static List<String> enterPlaceName() {
+        System.out.print("Enter place name: ");
+        String name = Main.scan.next();
+
+        System.out.print("Enter place volume: ");
+        String volume = Main.scan.next();
+
+        return Arrays.asList(name, volume);
+    }
+
+    private static void addParkingTenant(Parking selPlace) {
+        System.out.print("Tenant:\n1 - create new ");
+        if (Person.allExistingPersons.size() > 0)
+            System.out.println("\n2 - add existing");
+        int choice = scan.nextInt();
+        Person regPerson;
+        if (choice == 1) {
+            regPerson = Main.createPerson();
+            regPerson.isTenant = true;
+            Person.allExistingPersons.add(regPerson);
+
+            System.out.print("Enter person rent end: ");
+            String rentEnd = Main.scan.next();
+            selPlace.startPlaceRental(regPerson, LocalDate.parse(rentEnd));
+        } else if (choice == 2 && Person.allExistingPersons.size() > 0) {
+            regPerson = Main.findExistingPerson();
+            if (regPerson != null) {
+                regPerson.isTenant = true;
+                selPlace.startPlaceRental(regPerson, LocalDate.parse("20/12/2003"));
+            }
+        }
+    }
+
+
+    private static void showThingDetails(Thing selThing) {
+        System.out.println("Name: " + selThing.name);
+        System.out.println("Area: " + selThing.area);
+
+        if (selThing instanceof Vehicle) {
+            System.out.println("Vehicle type: " + ((Vehicle) selThing).vehicleType);
+            System.out.println("Engine type: " + ((Vehicle) selThing).engineType);
+            System.out.println("Engine capacity: " + ((Vehicle) selThing).engineCapacity);
+            if (Vehicle.soldVehicles.isEmpty())
+                System.out.println("Sold vehicles: none");
+            else
+                System.out.println("Sold vehicles: " + Vehicle.soldVehicles.toString());
+
+        } else {
+            if (Thing.thingsToUtilization.isEmpty())
+                System.out.println("Things to utilization: none");
+            else
+                System.out.println("Things to utilization: " + Thing.thingsToUtilization.toString());
         }
     }
 
@@ -138,32 +256,54 @@ class Main extends Thread {
 
         if (selPlace instanceof Apartment) {
             System.out.println("Person pay rent: " + ((Apartment) selPlace).personPayRent);
-            System.out.println("Living persons: " + selPlace.livingPersons.toString());
+            if (selPlace.livingPersons.isEmpty())
+                System.out.println("Living persons: none");
+            else
+                System.out.println("Living persons: " + selPlace.livingPersons.toString());
         } else if (selPlace instanceof Parking) {
             System.out.println("Stored things: " + ((Parking) selPlace).storedThings.toString());
             System.out.println("Available space: " + ((Parking) selPlace).availableSpace);
         }
     }
 
-    private static void addThing(Parking selPlace) {
-        System.out.println("Thing:\n1 - create new\n2 - add existing");
+    private static void addThing(Parking selParking) throws TooManyThingsException {
+        System.out.print("Thing:\n1 - create new ");
+        if (Thing.allExistingThings.size() > 0)
+            System.out.print("\n2 - add existing: ");
         int choice = scan.nextInt();
         Thing storeThing;
         if (choice == 1) {
             storeThing = Main.createThing();
-            selPlace.storedThings.add(storeThing);
-            System.out.println(selPlace.storedThings.get(0).name);
-        } else if (choice == 2) {
-            /*storeThing = Main.findExistingPerson();
             if (storeThing != null) {
-                storeThing.isTenant = true;
-            selPlace.assignRental(storeThing);
-            }*/
+                selParking.storedThings.add(storeThing);
+                Thing.allExistingThings.add(storeThing);
+            }
+        } else if (choice == 2 && Thing.allExistingThings.size() > 0) {
+            storeThing = Main.findExistingThing();
+            if (storeThing != null)
+                selParking.storeThing(storeThing);
         }
     }
 
-    private static void addTenant(Apartment selPlace) {
-        System.out.println("Tenant:\n1 - Create new\n2 - add existing");
+    private static Thing findExistingThing() {
+        List<String> ThingData = Main.enterThingData();
+        int same = 0;
+        for (Thing thing : Thing.allExistingThings) {
+            if (thing.name.equals(ThingData.get(0) + " " + ThingData.get(1)))
+                same++;
+            if (thing.area == Integer.parseInt(ThingData.get(2)))
+                same++;
+            if (same == 2)
+                return thing;
+        }
+        System.out.println("Entered thing is not exists");
+        return null;
+    }
+
+    private static void addApartTenant(Apartment selPlace) {
+        System.out.print("Tenant:\n1 - create new ");
+        if (Person.allExistingPersons.size() > 0)
+            System.out.println("\n2 - add existing");
         int choice = scan.nextInt();
         Person regPerson;
         if (choice == 1) {
@@ -171,7 +311,7 @@ class Main extends Thread {
             regPerson.isTenant = true;
             Person.allExistingPersons.add(regPerson);
             selPlace.assignRental(regPerson);
-        } else if (choice == 2) {
+        } else if (choice == 2 && Person.allExistingPersons.size() > 0) {
             regPerson = Main.findExistingPerson();
             if (regPerson != null) {
                 regPerson.isTenant = true;
@@ -180,12 +320,12 @@ class Main extends Thread {
         }
     }
 
-    private static void selPersonActions(Person selPerson) {
+    private static void selPersonActions(Person selPerson, Place selPlace) {
         int choice;
         if (selPerson.isTenant) {
             Main.showTenantActions();
             choice = scan.nextInt();
-            Main.tenantActions(selPerson, choice);
+            Main.tenantActions(selPerson, selPlace, choice);
         } else {
             System.out.println("About the person:");
             Main.showPersonDetails(selPerson);
@@ -221,7 +361,7 @@ class Main extends Thread {
 
     public static void selPerson(Place place) {
         System.out.println("\nPersons living in " + place.name + " currently:");
-        if (place.livingPersons.size() == 0) {
+        if (place.livingPersons.isEmpty()) {
             System.out.println("No one\n");
             Main.loop();
         } else {
@@ -231,9 +371,9 @@ class Main extends Thread {
         }
     }*/
 
-    public static void tenantActions(Person selTenant, int choice) {
+    public static void tenantActions(Person selTenant, Place selPlace, int choice) {
         switch (choice) {
-            case 1 -> Main.regPerson(selTenant);
+            case 1 -> Main.regPerson(selTenant, selPlace);
             case 2 -> Main.checkOutP(selTenant);
             case 3 -> Main.putTh(selTenant);
             case 4 -> Main.removeTh(selTenant);
@@ -249,11 +389,11 @@ class Main extends Thread {
         selTenant.cancelRental(place);
     }
 
-
     private static void renewRent(Person selTenant) {
         Place place = selApart(selTenant);
-//        LocalDate rentEnd = new LocalDate
-//        selTenant.renewRental(place, rentEnd);
+        System.out.println("Enter rent end:");
+        String rentEnd = scan.next();
+        selTenant.renewRental(place, rentEnd);
     }
 
     private static void removeTh(Person selTenant) {
@@ -291,7 +431,7 @@ class Main extends Thread {
     }
 
     private static Apartment selApart(Person selTenant) {
-        System.out.println("Select apartment:\n");
+        System.out.print("Select apartment: ");
         for (int i = 0; i < selTenant.rentedPlaces.size(); i++)
             if (selTenant.rentedPlaces.get(i) instanceof Apartment)
                 System.out.println(i + " - " + selTenant.rentedPlaces.get(i));
@@ -315,54 +455,74 @@ class Main extends Thread {
         selTenant.checkOutPerson(person, selPlace);
     }
 
-    private static void regPerson(Person selTenant) {
-        System.out.println("Person:\n1 - Create new\n2 - add existing");
+    private static void regPerson(Person selTenant, Place selPlace) {
+        System.out.print("Person:\n1 - create new ");
+        if (Person.allExistingPersons.size() > 1)
+            System.out.println("\n2 - add existing");
         int choice = scan.nextInt();
-
+/*
         System.out.println("Available apartments:\n");
         for (int i = 0; i < selTenant.rentedPlaces.size(); i++)
             System.out.println(i + " - " + selTenant.rentedPlaces.get(i));
         int choice2 = scan.nextInt();
         Place place = selTenant.rentedPlaces.get(choice2);
+*/
 
         Person regPerson;
         if (choice == 1) {
             regPerson = Main.createPerson();
-            selTenant.registerPerson(regPerson, place);
-        } else if (choice == 2) {
+            selTenant.registerPerson(regPerson, selPlace);
+            Person.allExistingPersons.add(regPerson);
+        } else if (choice == 2 && Person.allExistingPersons.size() > 1) {
             regPerson = Main.findExistingPerson();
-            selTenant.registerPerson(regPerson, place);
+            selTenant.registerPerson(regPerson, selPlace);
         }
     }
 
+    private static Estate findExistingEstate() {
+        List<String> estateData = Main.enterEstateName();
+        for (Estate estate : Estate.allExistingEstates)
+            if (estate.name.equals(estateData.get(0)))
+                return estate;
+        System.out.println("Entered estate is not exists");
+        return null;
+    }
+
+
     private static List<String> enterThingData() {
-        System.out.println("Enter thing name: ");
+        System.out.print("Enter thing name: ");
         String name = Main.scan.next();
+
+        System.out.print("Enter thing type (Vehicle or Thing): ");
+        String type = Main.scan.next();
 
         System.out.println("Enter:\n1 - volume\n2 - width, height, length");
         int choice = Main.scan.nextInt();
         String volume = Main.enterVolumeData(choice);
 
-        return Arrays.asList(name, volume);
+        return Arrays.asList(name, volume, type);
     }
 
     private static List<String> enterPersonData() {
-        System.out.println("Enter person first name: ");
+        System.out.print("Enter person first name: ");
         String firstN = Main.scan.next();
 
-        System.out.println("Enter person last name: ");
+        System.out.print("Enter person last name: ");
         String lastN = Main.scan.next();
 
-        System.out.println("Enter person pesel: ");
+        System.out.print("Enter person pesel: ");
         String pesel = Main.scan.next();
 
-        System.out.println("Enter person birthday: ");
+        System.out.print("Enter person birthday: ");
         String birthday = Main.scan.next();
 
-        System.out.println("Enter person address: ");
+        System.out.print("Enter person address: ");
+        Main.scan.useDelimiter("\\s");
         String address = Main.scan.next();
+        String address2 = Main.scan.next();
 
-        return Arrays.asList(firstN, lastN, pesel, birthday, address);
+        String addressComplete = address + " " + address2;
+        return Arrays.asList(firstN, lastN, pesel, birthday, addressComplete);
     }
 
     private static Person findExistingPerson() {
@@ -393,9 +553,21 @@ class Main extends Thread {
 
     private static Thing createThing() {
         List<String> personData = Main.enterThingData();
-        return new Thing(
-            personData.get(0), Integer.parseInt(personData.get(1))
-        );
+        if (personData.get(2).equals("Thing")) {
+            return new Thing(personData.get(0), Integer.parseInt(personData.get(1)));
+        } else if (personData.get(2).equals("Vehicle")) {
+            System.out.print("Enter engine capacity: ");
+            int engineCapacity = Main.scan.nextInt();
+
+            System.out.print("Enter vehicle type (available: " + Arrays.toString(Vehicle.availableTypes) +"): ");
+            String vehicleType = Main.scan.next();
+
+            System.out.print("Enter engine type: ");
+            String engineType = Main.scan.next();
+
+            return new Vehicle(personData.get(0), Integer.parseInt(personData.get(1)), engineCapacity, vehicleType, engineType);
+        }
+        return null;
     }
 
     private static List<String> enterPlaceData() {
@@ -418,8 +590,8 @@ class Main extends Thread {
             System.out.print("Enter volume: ");
             volume = Main.scan.nextInt();
         } else if (choice == 2) {
-            System.out.println("Enter width, height, length: ");
-            String []volumeParams = Main.scan.next().split(",");
+            System.out.print("Enter width, height, length (include comma) ");
+            String[] volumeParams = Main.scan.next().split(",");
             volume = Integer.parseInt(volumeParams[0]) * Integer.parseInt(volumeParams[1]) * Integer.parseInt(volumeParams[2]);
         }
         return String.valueOf(volume);
@@ -442,7 +614,6 @@ class Main extends Thread {
             System.out.println("Rented places: none");
         else
             System.out.println("Rented places: " + selPerson.rentedPlaces.toString());
-
         System.out.println("Address: " + selPerson.address);
         System.out.println("Pesel: " + selPerson.pesel);
         System.out.println("Address: " + selPerson.address);
@@ -473,7 +644,7 @@ class Main extends Thread {
         }
     }
 
-    public static LocalDate incrementDate() throws ParseException {
+    private static LocalDate incrementDate() throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
         c.setTime(sdf.parse(String.valueOf(Main.currDate)));
@@ -481,7 +652,7 @@ class Main extends Thread {
         return LocalDate.parse(sdf.format(c.getTime()));
     }
 
-    public static void checkRentedPlacesValidity() throws ParseException {
+    private static void checkRentedPlacesValidity() throws ParseException {
         for (int i = 0; i < Place.allRentedPlaces.size(); i++) {
             Person tenant = Place.allRentedPlaces.get(i).tenant;
             if (Place.allRentedPlaces.get(i).rentEnd.isAfter(Main.currDate))

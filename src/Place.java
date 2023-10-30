@@ -10,6 +10,7 @@ abstract public class Place {
     LocalDate rentStart, rentEnd;
     public List<Person> livingPersons = new ArrayList<>();
     public static List<Place> allRentedPlaces = new ArrayList<>();
+    public static List<Place> allExistingPlaces = new ArrayList<>();
 
     public Place(String name, int volume) {
         this.id = incrementId++;
@@ -43,11 +44,11 @@ abstract public class Place {
         }
     }
 
-     public void endPlaceRental() {
-         if (this.tenant.letters.size() > 0)
-             this.tenant.letters = null;
-         this.rentEnd = Main.currDate;
-     }
+    public void endPlaceRental() {
+        if (this.tenant.letters.size() > 0)
+         this.tenant.letters = null;
+        this.rentEnd = Main.currDate;
+    }
 
     public void clearPlace() {
         if (this instanceof Apartment)
