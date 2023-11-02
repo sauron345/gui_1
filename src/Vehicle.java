@@ -3,10 +3,10 @@ import java.util.Arrays;
 import java.util.List;
 
 class Vehicle extends Thing {
-    public int engineCapacity;
-    public String vehicleType, engineType;
+    private int engineCapacity;
+    private String vehicleType, engineType;
     public static final String[] availableTypes = {"Boat", "City Car", "Motorcycle", "Off Road", "Amphibian"};
-    public static List<Thing> soldVehicles = new ArrayList<>();
+    private static List<Thing> soldVehicles = new ArrayList<>();
 
     public Vehicle(String name, int area, int engineCapacity, String vehicleType, String engineType) {
         super(name, area);
@@ -15,7 +15,8 @@ class Vehicle extends Thing {
         this.engineCapacity = engineCapacity;
         this.engineType = engineType;
     }
-    public Vehicle(String name, int height, int width, int length, int engineCapacity, String vehicleType, String engineType) {
+
+    public Vehicle(String name, int width, int height, int length, int engineCapacity, String vehicleType, String engineType) {
         super(name, height, width, length);
         assert Arrays.asList(availableTypes).contains(vehicleType);
         this.vehicleType = vehicleType;
@@ -23,4 +24,19 @@ class Vehicle extends Thing {
         this.engineType = engineType;
     }
 
+    public int getEngineCapacity() {
+        return engineCapacity;
+    }
+
+    public String getVehicleType() {
+        return vehicleType;
+    }
+
+    public String getEngineType() {
+        return engineType;
+    }
+
+    public static List<Thing> getSoldVehicles() {
+        return soldVehicles;
+    }
 }

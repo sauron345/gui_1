@@ -13,7 +13,7 @@ public class TenantLetter {
     }
     public void read() {
         System.out.println("Dear " + tenantName + ", " +
-            "We would like to inform you that the rental of apartment " + place +
+            "We would like to inform you that the rental of apartment " + place.name +
             " has been terminated. Please leave the apartment or extend the contract");
     }
 

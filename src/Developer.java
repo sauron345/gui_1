@@ -2,8 +2,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Developer {
-    public String name;
-    public List<Estate> estates = new ArrayList<>();
+    private String name;
+    private List<Estate> estates = new ArrayList<>();
 
     public Developer(String name) {
         this.name = name;
@@ -20,6 +20,14 @@ public class Developer {
     public void removeEstate(Estate estate) {
         this.estates.remove(estate);
         Estate.allExistingEstates.remove(estate);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Estate> getEstates() {
+        return estates;
     }
 
 }
