@@ -8,18 +8,19 @@ public class Developer {
     public Developer(String name) {
         this.name = name;
     }
+
     public void addEstate(Estate estate) {
         this.estates.add(estate);
-        Estate.allExistingEstates.add(estate);
+        Estate.addEstateToExisting(estate);
     }
     public void addEstate(List<Estate> estates) {
         this.estates.addAll(estates);
-        Estate.allExistingEstates.addAll(estates);
+        Estate.addEstateToExisting(estates);
     }
 
     public void removeEstate(Estate estate) {
         this.estates.remove(estate);
-        Estate.allExistingEstates.remove(estate);
+        Estate.removeEstateToExisting(estate);
     }
 
     public String getName() {

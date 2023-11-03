@@ -1,17 +1,16 @@
-import java.time.LocalDate;
 import java.util.*;
 
 public class Person {
-    public String name;
-    public String pesel;
-    public String address;
-    public String birthday;
-    public int id;
-    public static int incrementId = 1;
-    public boolean isTenant;
-    public List<Place> rentedPlaces = new ArrayList<>();
-    public List<TenantLetter> letters = new ArrayList<>();
-    public static List<Person> allExistingPersons = new ArrayList<>();
+    private String name;
+    private String pesel;
+    private String address;
+    private String birthday;
+    private int id;
+    private static int incrementId = 1;
+    private boolean isTenant;
+    private List<Place> rentedPlaces = new ArrayList<>();
+    private List<TenantLetter> letters = new ArrayList<>();
+    private static List<Person> allExistingPersons = new ArrayList<>();
 
     public Person(String firstName, String lastName, String pesel, String birthday, String address) {
         this.pesel = pesel;
@@ -21,13 +20,33 @@ public class Person {
         this.address = address;
     }
 
+    public static void addPersonToExisting(Person person) {
+        Person.allExistingPersons.add(person);
+    }
+
+    public static void addPersonToExisting(List<Person> persons) {
+        Person.allExistingPersons.addAll(persons);
+    }
+
+    public void setPersonAsTenant() {
+        this.isTenant = true;
+    }
+
+    public void addLetter(TenantLetter letter) {
+        this.letters.add(letter);
+    }
+
+    public void removeLetter(TenantLetter letter) {
+        this.letters.remove(letter);
+    }
+
     private void registerPerson(Person person, Place place) {
         if (isTenant) {
             if (rentedPlaces.contains(place) && rentedPlaces.size() <= 5) {
-                if (place.livingPersons.contains(person))
+                if (place.getLivingPersons().contains(person))
                     System.out.println("Person " + person.name + " is already register");
                 else {
-                    place.livingPersons.add(person);
+                    place.addPersonToPlace(person);
                     Person.allExistingPersons.add(person);
                     System.out.println("Person " + person.name + "is successfully added");
                 }
@@ -39,8 +58,8 @@ public class Person {
 
     private void checkOutPerson(Person person, Apartment place) {
         if (isTenant && rentedPlaces.contains(place)) {
-            if (place.livingPersons.contains(person)) {
-                place.livingPersons.remove(person);
+            if (place.getLivingPersons().contains(person)) {
+                place.removePersonToPlace(person);
                 Person.allExistingPersons.remove(person);
                 System.out.println("Person " + person.name + " is successfully removed");
             } else
@@ -50,19 +69,19 @@ public class Person {
     }
 
     public static void showPersonsLiving(Place selPlace) {
-        System.out.println("\nSelect person living in " + selPlace.name + " :");
+        System.out.println("\nSelect person living in " + selPlace.getName() + " :");
         System.out.println("15 - Apartment details");
-        if (selPlace.livingPersons.isEmpty()) {
+        if (selPlace.getLivingPersons().isEmpty()) {
             System.out.println("No one");
             System.out.println("9 - Add tenant");
         } else {
             System.out.println("------------------");
             System.out.println("Living persons:");
-            for (int i = 0; i < selPlace.livingPersons.size(); i++) {
-                if (selPlace.livingPersons.get(i).isTenant)
-                    System.out.println(i + " - (Tenant) " + selPlace.livingPersons.get(i).name);
+            for (int i = 0; i < selPlace.getLivingPersons().size(); i++) {
+                if (selPlace.getLivingPersons().get(i).isTenant)
+                    System.out.println(i + " - (Tenant) " + selPlace.getLivingPersons().get(i).name);
                 else
-                    System.out.println(i + " - " + selPlace.livingPersons.get(i).name);
+                    System.out.println(i + " - " + selPlace.getLivingPersons().get(i).name);
             }
         }
 
@@ -72,21 +91,24 @@ public class Person {
         Person selPerson;
         if (choice == 15) {
             Place.showPlaceDetails(selPlace);
-        } else if (selPlace.livingPersons.isEmpty() && choice == 9) {
+        } else if (selPlace.getLivingPersons().isEmpty() && choice == 9) {
             Apartment.addApartTenant((Apartment) selPlace);
         } else {
-            selPerson = selPlace.livingPersons.get(choice);
+            selPerson = selPlace.getLivingPersons().get(choice);
             System.out.println("Selected person: " + selPerson.name);
             Person.selPersonActions(selPerson, selPlace);
         }
         return null;
     }
 
+    public void clearLetters() {
+        this.letters = null;
+    }
 
     public void removeThing(Thing thing, Parking parking) {
         if (isTenant && rentedPlaces.contains(parking)) {
-            if (parking.storedThings.contains(thing)) {
-                parking.storedThings.remove(thing);
+            if (parking.getStoredThings().contains(thing)) {
+                parking.getStoredThings().remove(thing);
                 System.out.println("Thing " + thing.getName() + " is successfully removed");
             } else
                 System.out.println("Thing " + thing.getName() + " is not exists");
@@ -96,26 +118,26 @@ public class Person {
 
     public void renewRental(Place place, String rentEnd) {
         if (this.isTenant && this.rentedPlaces.contains(place)) {
-            for (TenantLetter tenantLetter : place.tenant.letters) {
-                if (tenantLetter.place == place && tenantLetter.tenantName.equals(place.tenant.name)) {
-                    place.rentEnd = LocalDate.parse(rentEnd);
-                    place.rentStart = Main.currDate;
-                    place.tenant.letters.remove(tenantLetter);
+            for (TenantLetter tenantLetter : place.getTenant().letters) {
+                if (tenantLetter.getPlace() == place && tenantLetter.getName().equals(place.getTenant().name)) {
+                    place.setRentEnd(rentEnd);
+                    place.setRentStart();
+                    this.letters.remove(tenantLetter);
                 }
             }
         } else if (this.isTenant) {
-            place.rentStart = Main.currDate;
-            place.rentEnd = LocalDate.parse(rentEnd);
+            place.setRentStart();
+            place.setRentEnd(rentEnd);
         }
     }
 
     public void cancelRental(Place place) {
         if (this.isTenant && this.rentedPlaces.contains(place)) {
-            for (TenantLetter tenantLetter : place.tenant.letters)
-                if (tenantLetter.place == place && tenantLetter.tenantName.equals(place.tenant.name))
-                    place.tenant.letters.remove(tenantLetter);
+            for (TenantLetter tenantLetter : place.getTenant().letters)
+                if (tenantLetter.getPlace() == place && tenantLetter.getName().equals(place.getTenant().name))
+                    this.removeLetter(tenantLetter);
 //            place.rentStart = null;
-            place.rentEnd = Main.currDate;
+            place.setRentEnd(String.valueOf(Main.getCurrDate()));
         }
     }
 
@@ -123,7 +145,7 @@ public class Person {
         int choice;
         if (selPerson.isTenant) {
             Person.showTenantActions();
-            choice = Main.scan.nextInt();
+            choice = Main.getScan().nextInt();
             Person.tenantActions(selPerson, selPlace, choice);
         } else {
             System.out.println("About the person:");
@@ -142,12 +164,12 @@ public class Person {
     }
 
     public static Person selPerson(Place selPlace) {
-        System.out.println("Living persons in " + selPlace.name + "\n");
-        for (int i = 0; i < selPlace.livingPersons.size(); i++)
-            System.out.println(i + " - " + selPlace.livingPersons.get(i));
-        int choice = Main.scan.nextInt();
+        System.out.println("Living persons in " + selPlace.getName() + "\n");
+        for (int i = 0; i < selPlace.getLivingPersons().size(); i++)
+            System.out.println(i + " - " + selPlace.getLivingPersons().get(i));
+        int choice = Main.getScan().nextInt();
 
-        return selPlace.livingPersons.get(choice);
+        return selPlace.getLivingPersons().get(choice);
     }
 
     public static void putTh(Person selTenant) {
@@ -158,10 +180,10 @@ public class Person {
 
     public void putThing(Thing thing, Parking parking) {
         if (isTenant && rentedPlaces.contains(parking) && rentedPlaces.size() <= 5) {
-            if (parking.storedThings.contains(thing))
+            if (parking.getStoredThings().contains(thing))
                 System.out.println("Thing " + thing.getName() + " is already exists");
             else {
-                parking.storedThings.add(thing);
+                parking.getStoredThings().add(thing);
                 System.out.println("Thing " + thing.getName() + " is successfully added");
             }
         } else
@@ -197,7 +219,7 @@ public class Person {
         System.out.print("Person:\n1 - create new ");
         if (Person.allExistingPersons.size() > 1)
             System.out.println("\n2 - add existing");
-        int choice = Main.scan.nextInt();
+        int choice = Main.getScan().nextInt();
 /*
         System.out.println("Available apartments:\n");
         for (int i = 0; i < selTenant.rentedPlaces.size(); i++)
@@ -219,21 +241,21 @@ public class Person {
 
     public static List<String> enterPersonData() {
         System.out.print("Enter person first name: ");
-        String firstN = Main.scan.next();
+        String firstN = Main.getScan().next();
 
         System.out.print("Enter person last name: ");
-        String lastN = Main.scan.next();
+        String lastN = Main.getScan().next();
 
         System.out.print("Enter person pesel: ");
-        String pesel = Main.scan.next();
+        String pesel = Main.getScan().next();
 
         System.out.print("Enter person birthday: ");
-        String birthday = Main.scan.next();
+        String birthday = Main.getScan().next();
 
         System.out.print("Enter person address: ");
-        Main.scan.useDelimiter("\\s");
-        String address = Main.scan.next();
-        String address2 = Main.scan.next();
+        Main.getScan().useDelimiter("\\s");
+        String address = Main.getScan().next();
+        String address2 = Main.getScan().next();
 
         String addressComplete = address + " " + address2;
         return Arrays.asList(firstN, lastN, pesel, birthday, addressComplete);
@@ -273,7 +295,7 @@ public class Person {
     public static void renewRent(Person selTenant) {
         Place place = Apartment.selApart(selTenant);
         System.out.println("Enter rent end:");
-        String rentEnd = Main.scan.next();
+        String rentEnd = Main.getScan().next();
         selTenant.renewRental(place, rentEnd);
     }
 

@@ -1,22 +1,18 @@
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
 class Main extends MultiThread {
-
-    static int i = 1;
-    public static LocalDate currDate;
+    private static int i = 1;
+    private static LocalDate currDate;
     private static List<Place> places;
     private static List<Person> persons;
-    public static Scanner scan = new Scanner(System.in);
-    public static MultiThread multiThread;
+    private static final Scanner scan = new Scanner(System.in);
+    private static final MultiThread multiThread = new MultiThread();
 
     public static void main(String[] args) throws TooManyThingsException {
         Main main = new Main();
 
         Main.currDate = LocalDate.now();
-        Main.multiThread = new MultiThread();
         int choice;
 
         Developer dev = new Developer("Patryk");
@@ -32,7 +28,7 @@ class Main extends MultiThread {
         persons = Arrays.asList(
             person, person2, person3, person4, person5
         );
-        Person.allExistingPersons.addAll(persons);
+        Person.addPersonToExisting(persons);
 
         Apartment apartment = new Apartment("room1", 42);
         Apartment apartment2 = new Apartment("room2", 54);
@@ -104,4 +100,27 @@ class Main extends MultiThread {
         }
     }*/
 
+    public static int getI() {
+        return i;
+    }
+
+    public static LocalDate getCurrDate() {
+        return currDate;
+    }
+
+    public static List<Place> getPlaces() {
+        return places;
+    }
+
+    public static List<Person> getPersons() {
+        return persons;
+    }
+
+    public static Scanner getScan() {
+        return scan;
+    }
+
+    public static MultiThread getMultiThread() {
+        return multiThread;
+    }
 }

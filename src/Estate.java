@@ -3,9 +3,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Estate {
-    public String name;
-    public List<Place> places = new ArrayList<>();
-    public static List<Estate> allExistingEstates = new ArrayList<>();
+    private String name;
+    private List<Place> places = new ArrayList<>();
+    private static List<Estate> allExistingEstates = new ArrayList<>();
 
     public Estate(String name) {
         this.name = name;
@@ -13,15 +13,25 @@ public class Estate {
 
     public Place addPlace(Place place) {
         this.places.add(place);
-        Place.allExistingPlaces.add(place);
+        Place.addPlaceToExisting(place);
         return place;
     }
 
     public void addPlace(List<Place> places) {
         this.places.addAll(places);
-        Place.allExistingPlaces.addAll(places);
+        Place.addPlaceToExisting(places);
     }
 
+    public static void addEstateToExisting(Estate estate) {
+        Estate.allExistingEstates.add(estate);
+    }
+
+    public static void addEstateToExisting(List<Estate> estates) {
+        Estate.allExistingEstates.addAll(estates);
+    }
+    public static void removeEstateToExisting(Estate estate) {
+        Estate.allExistingEstates.remove(estate);
+    }
     public void removePlace(Place place) {
         this.places.remove(place);
     }
@@ -71,7 +81,7 @@ public class Estate {
 
     private static List<String> enterEstateName() {
         System.out.print("Enter estate name: ");
-        String name = Main.scan.next();
+        String name = Main.getScan().next();
 
         return Arrays.asList(name);
     }

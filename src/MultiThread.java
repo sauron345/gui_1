@@ -8,10 +8,10 @@ public class MultiThread extends Thread{
     @Override
     public void run() {
         try {
-            System.out.println("\n"+ Main.currDate);
+            System.out.println("\n"+ Main.getCurrDate());
             Thread.sleep(5000);
             LocalDate currDate = MultiThread.incrementDate();
-            if (Main.i % 2 == 0)
+            if (Main.getI() % 2 == 0)
                 Place.checkRentedPlacesValidity();
         } catch (InterruptedException e ) {
         } catch (ParseException e) {
@@ -22,7 +22,7 @@ public class MultiThread extends Thread{
     private static LocalDate incrementDate() throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
-        c.setTime(sdf.parse(String.valueOf(Main.currDate)));
+        c.setTime(sdf.parse(String.valueOf(Main.getCurrDate())));
         c.add(Calendar.DATE, 1);
         return LocalDate.parse(sdf.format(c.getTime()));
     }

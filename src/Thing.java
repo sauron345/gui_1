@@ -5,8 +5,8 @@ import java.util.List;
 public class Thing {
     private String name;
     private int area;
-    public static List<Thing> thingsToUtilization = new ArrayList<>();
-    public static List<Thing> allExistingThings = new ArrayList<>();
+    private static List<Thing> thingsToUtilization = new ArrayList<>();
+    private static List<Thing> allExistingThings = new ArrayList<>();
 
     public Thing(String name, int area) {
         this.name = name;
@@ -15,6 +15,14 @@ public class Thing {
     public Thing(String name, int height, int width, int length) {
         this.name = name;
         this.area = height * width * length;
+    }
+
+    public static void addThingToUtilization(Thing thing) {
+        Thing.thingsToUtilization.add(thing);
+    }
+
+    public static void addThingToExisting(Thing thing) {
+        Thing.allExistingThings.add(thing);
     }
 
     public static void showThingDetails(Thing selThing) {
@@ -46,7 +54,7 @@ public class Thing {
         else if (choice == 20)
             Parking.addThing(selPlace);
         else {
-            Thing selThing = selPlace.storedThings.get(choice);
+            Thing selThing = selPlace.getStoredThings().get(choice);
             System.out.println("Selected thing: " + selThing.name);
             Thing.showThingDetails(selThing);
         }
@@ -69,26 +77,26 @@ public class Thing {
 
 
     public static Thing selThing(Parking selParking) {
-        System.out.println("Stored things in " + selParking.name + "\n");
-        for (int i = 0; i < selParking.storedThings.size(); i++) {
-            if (selParking.storedThings.get(i) instanceof Vehicle)
-                System.out.println(i + " - (Vehicle) " + selParking.storedThings.get(i));
+        System.out.println("Stored things in " + selParking.getName() + "\n");
+        for (int i = 0; i < selParking.getStoredThings().size(); i++) {
+            if (selParking.getStoredThings().get(i) instanceof Vehicle)
+                System.out.println(i + " - (Vehicle) " + selParking.getStoredThings().get(i));
             else
-                System.out.println(i + " - " + selParking.storedThings.get(i));
+                System.out.println(i + " - " + selParking.getStoredThings().get(i));
         }
-        int choice2 = Main.scan.nextInt();
-        return selParking.storedThings.get(choice2);
+        int choice2 = Main.getScan().nextInt();
+        return selParking.getStoredThings().get(choice2);
     }
 
     public static List<String> enterThingData() {
         System.out.print("Enter thing name: ");
-        String name = Main.scan.next();
+        String name = Main.getScan().next();
 
         System.out.print("Enter thing type (Vehicle or Thing): ");
-        String type = Main.scan.next();
+        String type = Main.getScan().next();
 
         System.out.println("Enter:\n1 - volume\n2 - width, height, length");
-        int choice = Main.scan.nextInt();
+        int choice = Main.getScan().nextInt();
         List<String> volume = Main.enterVolumeData(choice);
 
         if (volume.size() > 1)
@@ -120,13 +128,13 @@ public class Thing {
         List<String> vehicleData = new ArrayList<>();
 
         System.out.print("Enter engine capacity: ");
-        vehicleData.add(Main.scan.next());
+        vehicleData.add(Main.getScan().next());
 
         System.out.print("Enter vehicle type (available: " + Arrays.toString(Vehicle.availableTypes) +"): ");
-        vehicleData.add(Main.scan.next());
+        vehicleData.add(Main.getScan().next());
 
         System.out.print("Enter engine type: ");
-        vehicleData.add(Main.scan.next());
+        vehicleData.add(Main.getScan().next());
 
         return vehicleData;
 

@@ -1,5 +1,5 @@
 public class Apartment extends Place {
-    public Person personPayRent;
+    private Person personPayRent;
 
     public Apartment(String name, int height, int width, int length) {
         super(name, height, width, length);
@@ -10,37 +10,41 @@ public class Apartment extends Place {
 
     private void assignRental(Person tenant) {
         this.personPayRent = tenant;
-        super.livingPersons.add(tenant);
+        super.addPersonToPlace(tenant);
     }
 
     public static void addApartTenant(Apartment selPlace) {
         System.out.print("Tenant:\n1 - create new ");
-        if (Person.allExistingPersons.size() > 0)
+        if (Person.getAllExistingPersons().size() > 0)
             System.out.println("\n2 - add existing");
-        int choice = Main.scan.nextInt();
+        int choice = Main.getScan().nextInt();
         Person regPerson;
         if (choice == 1) {
             regPerson = Person.createPerson();
-            regPerson.isTenant = true;
-            Person.allExistingPersons.add(regPerson);
+            regPerson.setPersonAsTenant();
+            Person.addPersonToExisting(regPerson);
             selPlace.assignRental(regPerson);
-        } else if (choice == 2 && Person.allExistingPersons.size() > 0) {
+        } else if (choice == 2 && Person.getAllExistingPersons().size() > 0) {
             regPerson = Person.findExistingPerson();
             if (regPerson != null) {
-                regPerson.isTenant = true;
+                regPerson.setPersonAsTenant();
                 selPlace.assignRental(regPerson);
             }
         }
     }
 
+    public void setPersonPayRent(Person person) {
+        this.personPayRent = person;
+    }
+
     public static Apartment selApart(Person selTenant) {
         System.out.print("Select apartment: ");
-        for (int i = 0; i < selTenant.rentedPlaces.size(); i++)
-            if (selTenant.rentedPlaces.get(i) instanceof Apartment)
-                System.out.println(i + " - " + selTenant.rentedPlaces.get(i));
-        int choice = Main.scan.nextInt();
+        for (int i = 0; i < selTenant.getRentedPlaces().size(); i++)
+            if (selTenant.getRentedPlaces().get(i) instanceof Apartment)
+                System.out.println(i + " - " + selTenant.getRentedPlaces().get(i));
+        int choice = Main.getScan().nextInt();
 
-        return (Apartment) selTenant.rentedPlaces.get(choice);
+        return (Apartment) selTenant.getRentedPlaces().get(choice);
     }
 
     public Person getPersonPayRent() {

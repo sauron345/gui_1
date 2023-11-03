@@ -1,11 +1,10 @@
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Parking extends Place {
-    public List<Thing> storedThings = new ArrayList<>();
-    public int availableSpace;
+    private List<Thing> storedThings = new ArrayList<>();
+    private int availableSpace;
 
     public Parking(String name, int volume) {
         super(name, volume);
@@ -14,7 +13,7 @@ public class Parking extends Place {
 
     public Parking(String name, int height, int width, int length) {
         super(name, height, width, length);
-        this.availableSpace = volume;
+        this.availableSpace = height * width * length;
     }
 
     public void storeThing(Thing thing) throws TooManyThingsException {
@@ -30,7 +29,7 @@ public class Parking extends Place {
             for (Thing storeThing : this.storedThings)
                 this.availableSpace -= storeThing.getArea();
         } else
-            this.availableSpace = this.volume;
+            this.availableSpace = this.getVolume();
         return this.availableSpace;
     }
 
@@ -39,29 +38,29 @@ public class Parking extends Place {
             if (storedThing instanceof Vehicle)
                 Vehicle.getSoldVehicles().add(storedThing);
             else
-                Thing.thingsToUtilization.add(storedThing);
+                Thing.addThingToUtilization(storedThing);
             this.storedThings.remove(storedThing);
         }
     }
 
     public static void addParkingTenant(Parking selPlace) {
         System.out.print("Tenant:\n1 - create new ");
-        if (Person.allExistingPersons.size() > 0)
+        if (Person.getAllExistingPersons().size() > 0)
             System.out.println("\n2 - add existing");
-        int choice = Main.scan.nextInt();
+        int choice = Main.getScan().nextInt();
         Person regPerson;
         if (choice == 1) {
             regPerson = Person.createPerson();
-            regPerson.isTenant = true;
-            Person.allExistingPersons.add(regPerson);
+            regPerson.setPersonAsTenant();
+            Person.addPersonToExisting(regPerson);
 
             System.out.print("Enter person rent end: ");
-            String rentEnd = Main.scan.next();
+            String rentEnd = Main.getScan().next();
             selPlace.startPlaceRental(regPerson, LocalDate.parse(rentEnd));
-        } else if (choice == 2 && Person.allExistingPersons.size() > 0) {
+        } else if (choice == 2 && Person.getAllExistingPersons().size() > 0) {
             regPerson = Person.findExistingPerson();
             if (regPerson != null) {
-                regPerson.isTenant = true;
+                regPerson.setPersonAsTenant();
                 selPlace.startPlaceRental(regPerson, LocalDate.parse("20/12/2003"));
             }
         }
@@ -69,17 +68,17 @@ public class Parking extends Place {
 
     public static void addThing(Parking selParking) throws TooManyThingsException {
         System.out.print("Thing:\n1 - create new ");
-        if (Thing.allExistingThings.size() > 0)
+        if (Thing.getAllExistingThings().size() > 0)
             System.out.print("\n2 - add existing: ");
-        int choice = Main.scan.nextInt();
+        int choice = Main.getScan().nextInt();
         Thing storeThing;
         if (choice == 1) {
             storeThing = Thing.createThing();
             if (storeThing != null) {
                 selParking.storedThings.add(storeThing);
-                Thing.allExistingThings.add(storeThing);
+                Thing.addThingToExisting(storeThing);
             }
-        } else if (choice == 2 && Thing.allExistingThings.size() > 0) {
+        } else if (choice == 2 && Thing.getAllExistingThings().size() > 0) {
             storeThing = Thing.findExistingThing();
             if (storeThing != null)
                 selParking.storeThing(storeThing);
@@ -87,15 +86,15 @@ public class Parking extends Place {
     }
 
     public static void showStoredThings(Parking selParking) {
-        System.out.println("\nSelect thing stored in " + selParking.name + ":");
+        System.out.println("\nSelect thing stored in " + selParking.getName() + ":");
         System.out.println("15 - Parking details");
-        if (selParking.tenant == null)
+        if (selParking.getTenant() == null)
             System.out.println("9 - Add tenant");
         else if (selParking.storedThings.isEmpty()) {
             System.out.println("Nothing stored yet");
         } else {
             System.out.println("------------------");
-            System.out.println("Tenant - " + selParking.tenant.name);
+            System.out.println("Tenant - " + selParking.getTenant().getName());
             System.out.println("20 - Add thing");
             for (int i = 0; i < selParking.storedThings.size(); i++)
                 System.out.println(i + " - " + selParking.storedThings.get(i).getName());
@@ -104,12 +103,12 @@ public class Parking extends Place {
 
     public static Parking selParking(Person selTenant) {
         System.out.println("Select parking:\n");
-        for (int i = 0; i < selTenant.rentedPlaces.size(); i++)
-            if (selTenant.rentedPlaces.get(i) instanceof Parking)
-                System.out.println(i + " - " + selTenant.rentedPlaces.get(i));
-        int choice = Main.scan.nextInt();
+        for (int i = 0; i < selTenant.getRentedPlaces().size(); i++)
+            if (selTenant.getRentedPlaces().get(i) instanceof Parking)
+                System.out.println(i + " - " + selTenant.getRentedPlaces().get(i));
+        int choice = Main.getScan().nextInt();
 
-        return (Parking) selTenant.rentedPlaces.get(choice);
+        return (Parking) selTenant.getRentedPlaces().get(choice);
     }
 
     public List<Thing> getStoredThings() {
