@@ -10,10 +10,12 @@ public class TenantLetter {
         this.name = tenantName;
         this.place = place;
     }
-    public void read() {
-        System.out.println("Dear " + name + ", " +
+
+    public String read() {
+        return "Dear " + name + ", " +
             "We would like to inform you that the rental of apartment " + place.getName() +
-            " has been terminated. Please leave the apartment or extend the contract");
+            " has been terminated. Please leave the apartment or extend the contract" +
+            "\nReceived: " + receivedDate;
     }
 
     public String getName() {

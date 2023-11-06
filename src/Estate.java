@@ -11,6 +11,18 @@ public class Estate {
         this.name = name;
     }
 
+    public Place getPlace(int index) {
+        return this.places.get(index);
+    }
+
+    public int placesSize() {
+        return this.places.size();
+    }
+
+    public static int allExistingEstatesSize() {
+        return Estate.allExistingEstates.size();
+    }
+
     public Place addPlace(Place place) {
         this.places.add(place);
         Place.addPlaceToExisting(place);
@@ -29,9 +41,11 @@ public class Estate {
     public static void addEstateToExisting(List<Estate> estates) {
         Estate.allExistingEstates.addAll(estates);
     }
+
     public static void removeEstateToExisting(Estate estate) {
         Estate.allExistingEstates.remove(estate);
     }
+
     public void removePlace(Place place) {
         this.places.remove(place);
     }
@@ -43,8 +57,8 @@ public class Estate {
             System.out.println("21 - remove estate");
             System.out.println("------------------");
             System.out.println("Existing estates:");
-            for (int i = 0; i < dev.getEstates().size(); i++)
-                System.out.println(i + " - " + dev.getEstates().get(i).name);
+            for (int i = 0; i < dev.estatesSize(); i++)
+                System.out.println(i + " - " + dev.getEstate(i).name);
         } else
             System.out.println("No places available yet");
 
@@ -61,7 +75,7 @@ public class Estate {
             if (selEstate != null)
                 dev.removeEstate(selEstate);
         } else
-            return dev.getEstates().get(choice);
+            return dev.getEstate(choice);
         return selEstate;
     }
 
@@ -90,11 +104,4 @@ public class Estate {
         return name;
     }
 
-    public List<Place> getPlaces() {
-        return places;
-    }
-
-    public static List<Estate> getAllExistingEstates() {
-        return allExistingEstates;
-    }
 }

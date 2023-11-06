@@ -27,8 +27,12 @@ public class Developer {
         return name;
     }
 
-    public List<Estate> getEstates() {
-        return estates;
+    public Estate getEstate(int index) {
+        return this.estates.get(index);
+    }
+
+    public int estatesSize() {
+        return this.estates.size();
     }
 
 }

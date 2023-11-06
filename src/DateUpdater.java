@@ -3,14 +3,15 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Calendar;
 
-public class MultiThread extends Thread{
+public class DateUpdater extends Thread{
 
     @Override
     public void run() {
         try {
-            System.out.println("\n"+ Main.getCurrDate());
+            System.out.println();
+            System.out.println(Main.getCurrDate());
             Thread.sleep(5000);
-            LocalDate currDate = MultiThread.incrementDate();
+            LocalDate currDate = DateUpdater.incrementDate();
             if (Main.getI() % 2 == 0)
                 Place.checkRentedPlacesValidity();
         } catch (InterruptedException e ) {

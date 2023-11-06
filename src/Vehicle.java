@@ -24,6 +24,28 @@ class Vehicle extends Thing {
         this.engineType = engineType;
     }
 
+    public static void addSoldVehicle(Thing thing) {
+        Vehicle.soldVehicles.add(thing);
+    }
+
+    public static void displaySoldVehicles() {
+        System.out.println("Sold vehicles:");
+        for (int i = 0; i < Vehicle.soldVehicles.size(); i++) {
+            System.out.println("- " + Vehicle.soldVehicles.get(i));
+        }
+    }
+
+    public static void displayAvailableVehicles() {
+        System.out.println("Available:");
+        for (int i = 0; i < Vehicle.availableTypes.length; i++) {
+            System.out.println("- " + Vehicle.availableTypes[i]);
+        }
+    }
+
+    public static boolean checkSoldVehiclesIsEmpty() {
+        return Vehicle.soldVehicles.isEmpty();
+    }
+
     public int getEngineCapacity() {
         return engineCapacity;
     }
@@ -36,7 +58,4 @@ class Vehicle extends Thing {
         return engineType;
     }
 
-    public static List<Thing> getSoldVehicles() {
-        return soldVehicles;
-    }
 }
