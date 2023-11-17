@@ -1,25 +1,24 @@
 import java.time.LocalDate;
 
 public class TenantLetter {
-    private String name;
-    private LocalDate receivedDate;
-    private Place place;
+    private final String personName;
+    private final LocalDate receivedDate;
+    private final Place place;
 
     public TenantLetter(String tenantName, Place place) {
-        this.receivedDate = Main.getCurrDate();
-        this.name = tenantName;
+        this.receivedDate = DateUpdater.getCurrDate();
+        this.personName = tenantName;
         this.place = place;
     }
 
     public String read() {
-        return "Dear " + name + ", " +
+        return "(Received: " + receivedDate + ")" + " Dear " + personName + ", " +
             "We would like to inform you that the rental of apartment " + place.getName() +
-            " has been terminated. Please leave the apartment or extend the contract" +
-            "\nReceived: " + receivedDate;
+            " has been terminated. Please leave the apartment or extend the contract.";
     }
 
-    public String getName() {
-        return name;
+    public String getPersonName() {
+        return personName;
     }
 
     public LocalDate getReceivedDate() {

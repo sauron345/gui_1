@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class Thing {
-    private String name;
-    private int area;
+    protected String name;
+    protected int area;
     private static List<Thing> thingsToUtilization = new ArrayList<>();
     private static List<Thing> allExistingThings = new ArrayList<>();
 
@@ -18,50 +18,43 @@ public class Thing {
         this.area = height * width * length;
     }
 
-    public static void addThingToUtilization(Thing thing) {
-        Thing.thingsToUtilization.add(thing);
+    public void showThingDetails() {
+        System.out.println("Name: " + this.name);
+        System.out.println("Area: " + this.area);
+        System.out.println("Things to utilization: " + this.getSoldVehicles());
     }
 
-    public static void addThingToExisting(Thing thing) {
-        Thing.allExistingThings.add(thing);
+    private String getSoldVehicles() {
+        if (Vehicle.checkSoldVehiclesIsEmpty())
+            return "none";
+        else
+            return Thing.displayThingsToUtilization();
     }
 
-    public static void showThingDetails(Thing selThing) {
-        System.out.println("Name: " + selThing.name);
-        System.out.println("Area: " + selThing.area);
-
-        if (selThing instanceof Vehicle) {
-            System.out.println("Vehicle type: " + ((Vehicle) selThing).getVehicleType());
-            System.out.println("Engine type: " + ((Vehicle) selThing).getEngineType());
-            System.out.println("Engine capacity: " + ((Vehicle) selThing).getEngineCapacity());
-            if (Vehicle.checkSoldVehiclesIsEmpty())
-                System.out.println("Sold vehicles: none");
-            else
-                Vehicle.displaySoldVehicles();
-
-        } else {
-            if (Thing.thingsToUtilization.isEmpty())
-                System.out.println("Things to utilization: none");
-            else
-                System.out.println("Things to utilization: " + Thing.thingsToUtilization.toString());
-        }
+    private static String displayThingsToUtilization() {
+        String thingsToUtilizationList = "";
+        for (int i = 0; i < Thing.thingsToUtilization.size(); i++)
+            thingsToUtilizationList += "- " + Thing.thingsToUtilization.get(i) + "\n";
+        return thingsToUtilizationList;
     }
 
-    public static void selThingOption(int choice, Parking selPlace) {
-        if (choice == 15) {
-            Place.showPlaceDetails(selPlace);
-        } else if (choice == 9)
-            Parking.addParkingTenant(selPlace);
-        else if (choice == 20)
+    public static void selThingOption(String choice, Parking selPlace) {
+        if (choice.equals("15")) {
+            selPlace.showPlaceDetails();
+        } else if (choice.equals("9"))
+            selPlace.addParkingTenant();
+        else if (choice.equals("20"))
             Parking.addThing(selPlace);
-        else {
-            Thing selThing = selPlace.getStoreThing(choice);
+        else if (choice.equals("t")) {
+            selPlace.tenant.selPersonActions(selPlace);
+        } else {
+            Thing selThing = selPlace.getStoredThing(Integer.parseInt(choice));
             System.out.println("Selected thing: " + selThing.name);
-            Thing.showThingDetails(selThing);
+            selThing.showThingDetails();
         }
     }
 
-    public static Thing findExistingThing() {
+/*    public static Thing findExistingThing() {
         List<String> ThingData = Thing.enterThingData();
         int same = 0;
         for (Thing thing : Thing.allExistingThings) {
@@ -74,72 +67,82 @@ public class Thing {
         }
         System.out.println("Entered thing is not exists");
         return null;
-    }
+    }*/
 
 
     public static Thing selThing(Parking selParking) {
         System.out.println("Stored things in " + selParking.getName() + "\n");
         for (int i = 0; i < selParking.storedThingsSize(); i++) {
-            if (selParking.getStoreThing(i) instanceof Vehicle)
-                System.out.println(i + " - (Vehicle) " + selParking.getStoreThing(i));
+            if (selParking.getStoredThing(i) instanceof Vehicle)
+                System.out.println(i + " - (Vehicle) " + selParking.getStoredThing(i).getName());
             else
-                System.out.println(i + " - " + selParking.getStoreThing(i));
+                System.out.println(i + " - " + selParking.getStoredThing(i).getName());
         }
         int choice2 = Main.getScan().nextInt();
-        return selParking.getStoreThing(choice2);
+        return selParking.getStoredThing(choice2);
     }
 
     public static List<String> enterThingData() {
         System.out.print("Enter thing name: ");
         String name = Main.getScan().next();
 
-        System.out.print("Enter thing type (Vehicle or Thing): ");
-        String type = Main.getScan().next();
+        System.out.println("Enter thing type:\n1 - Vehicle\n2 - Thing");
+        String type = Thing.selThingType();
 
         System.out.println("Enter:\n1 - volume\n2 - width, height, length");
         int choice = Main.getScan().nextInt();
         List<String> volume = Main.enterVolumeData(choice);
 
         if (volume.size() > 1)
-            return Arrays.asList(name, volume.get(0), volume.get(1), volume.get(2), type);
+            return Arrays.asList(type, name, volume.get(0), volume.get(1), volume.get(2));
         else
-            return Arrays.asList(name, volume.get(0), type);
+            return Arrays.asList(type, name, volume.get(0), "", "");
     }
 
     public static Thing createThing() {
-        List<String> personData = Thing.enterThingData();
+        List<String> thingData = Thing.enterThingData();
+        String chosenThingType = thingData.get(0);
+        return getChosenThingType(chosenThingType, thingData);
+    }
 
-        if (personData.get(2).equals("Thing")) {
-            return new Thing(personData.get(0), Integer.parseInt(personData.get(1)));
-        } else if (personData.get(2).equals("Vehicle")) {
-            List<String> vehicleData = Thing.enterVehicleReqParams();
-            if (personData.size() > 5)
-                return new Vehicle(personData.get(0), Integer.parseInt(personData.get(1)),
-                        Integer.parseInt(personData.get(2)), Integer.parseInt(personData.get(1)),
-                        Integer.parseInt(vehicleData.get(0)), vehicleData.get(1),
-                        vehicleData.get(2));
-            else
-                return new Vehicle(personData.get(0), Integer.parseInt(personData.get(1)),
-                        Integer.parseInt(vehicleData.get(0)), vehicleData.get(1), vehicleData.get(2));
-        }
+    private static Thing getChosenThingType(String chosenThingType, List<String> thingData){
+        if (chosenThingType.equals("Thing") && thingData.get(3).equals("") && thingData.get(4).equals(""))
+            return Thing.createThing(thingData);
+        else if (chosenThingType.equals("Thing"))
+            return Thing.createThingWithVolumeParams(thingData);
+        else if (chosenThingType.equals("Vehicle") && thingData.get(3).equals("") && thingData.get(4).equals(""))
+            return Vehicle.createVehicle(thingData);
+        else if (chosenThingType.equals("Vehicle"))
+            return Vehicle.createVehicleWithVolumeParams(thingData);
+
         return null;
     }
 
-    private static List<String> enterVehicleReqParams() {
-        List<String> vehicleData = new ArrayList<>();
+    private static String selThingType() {
+        int choice = Main.getScan().nextInt();
+        if (choice == 1)
+            return "Vehicle";
+        else if (choice == 2)
+            return "Thing";
+        else
+            return "none";
+    }
 
-        System.out.print("Enter engine capacity: ");
-        vehicleData.add(Main.getScan().next());
+    private static Thing createThing(List<String> thingData) {
+        return new Thing(thingData.get(1), Integer.parseInt(thingData.get(2)));
+    }
 
-        System.out.println("Enter vehicle type");
-        Vehicle.displayAvailableVehicles();
-        vehicleData.add(Main.getScan().next());
+    private static Thing createThingWithVolumeParams(List<String> thingData) {
+        return new Thing(thingData.get(1), Integer.parseInt(thingData.get(2)),
+                Integer.parseInt(thingData.get(3)), Integer.parseInt(thingData.get(4)));
+    }
 
-        System.out.print("Enter engine type: ");
-        vehicleData.add(Main.getScan().next());
+    public static void addToUtilization(Thing thing) {
+        Thing.thingsToUtilization.add(thing);
+    }
 
-        return vehicleData;
-
+    public static void addThingToExisting(Thing thing) {
+        Thing.allExistingThings.add(thing);
     }
 
     public static int allExistingThingsSize() {

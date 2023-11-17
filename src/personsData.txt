@@ -1,0 +1,66 @@
+id: 1
+name: Sebastian Wieczorek
+pesel: 1236432212
+address: Przasnyska 23a
+is tenant: false
+birthday: 2002-11-30
+Rented places: none
+Tenant letters details: not tenant
+-------------------------------------
+id: 2
+name: Damian Mołdawski
+pesel: 423423234
+address: Kwiatkowskiego 1c
+is tenant: false
+birthday: 2002-09-23
+Rented places: none
+Tenant letters details: not tenant
+-------------------------------------
+id: 3
+name: Robert Kowalski
+pesel: 1231232132
+address: Bogusławskiego 3
+is tenant: false
+birthday: 2005-05-15
+Rented places: none
+Tenant letters details: not tenant
+-------------------------------------
+id: 4
+name: Lidia Szczypior
+pesel: 543342158
+address: Powązkowska 25b
+is tenant: false
+birthday: 2002-12-11
+Rented places: none
+Tenant letters details: not tenant
+-------------------------------------
+id: 5
+name: Piotr Wróbel
+pesel: 1247964332
+address: Maczka 43
+is tenant: false
+birthday: 2003-07-21
+Rented places: none
+Tenant letters details: not tenant
+-------------------------------------
+id: 6
+name: sebson wieczorek
+pesel: 123
+address: abc 456
+is tenant: true
+birthday: 2000-12-12
+Rented places: none
+Tenant letters details: 
+0 - (Received: 2023-12-13) Dear sebson wieczorek, We would like to inform you that the rental of apartment room1 has been terminated. Please leave the apartment or extend the contract.
+1 - (Received: 2023-12-13) Dear sebson wieczorek, We would like to inform you that the rental of apartment parking1 has been terminated. Please leave the apartment or extend the contract.
+
+-------------------------------------
+id: 7
+name: damian wieczorek
+pesel: 123
+address: aabc 345
+is tenant: false
+birthday: 2000-12-12
+Rented places: none
+Tenant letters details: not tenant
+-------------------------------------

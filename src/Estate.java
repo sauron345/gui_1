@@ -3,35 +3,80 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Estate {
-    private String name;
-    private List<Place> places = new ArrayList<>();
-    private static List<Estate> allExistingEstates = new ArrayList<>();
+    private final String name;
+    static List<Estate> allExistingEstates = new ArrayList<>();
+    private List<Block> blocks = new ArrayList<>();
+    private static List<Block> allExistingBlocks = new ArrayList<>();
 
     public Estate(String name) {
         this.name = name;
     }
 
-    public Place getPlace(int index) {
-        return this.places.get(index);
+    public void addBlock(Block block) {
+        Estate.allExistingBlocks.add(block);
+        this.blocks.add(block);
     }
 
-    public int placesSize() {
-        return this.places.size();
+    public static void showEstateOptions(Developer dev) {
+        System.out.println("\nSelect estate:");
+        System.out.println("a - add estate");
+        if (dev.estatesSize() > 0) {
+            System.out.println("r - remove estate");
+            System.out.println("------------------");
+            System.out.println("Existing estates:");
+            System.out.print(dev.showEstates());
+        } else
+            System.out.println("No places available yet");
     }
 
-    public static int allExistingEstatesSize() {
-        return Estate.allExistingEstates.size();
+    public static Estate selEstateOption(String choice, Developer dev) {
+        Estate selEstate;
+        if (choice.equals("a")) {
+            selEstate = Estate.createEstate();
+            dev.addEstate(selEstate);
+            return selEstate;
+        } else if (choice.equals("r") && Estate.allExistingEstates.size() > 0) {
+            selEstate = Estate.findExistingEstate();
+            Estate.existingEstateResult(dev, selEstate);
+        } else
+            return dev.getEstate(Integer.parseInt(choice));
+        return selEstate;
     }
 
-    public Place addPlace(Place place) {
-        this.places.add(place);
-        Place.addPlaceToExisting(place);
-        return place;
+    public String showBlocks() {
+        String blocksList = "";
+        for (int i = 0; i < this.blocksCount(); i++)
+            blocksList += i + " - " + this.getBlock(i).getName() + "\n";
+        return blocksList;
     }
 
-    public void addPlace(List<Place> places) {
-        this.places.addAll(places);
-        Place.addPlaceToExisting(places);
+    private static void existingEstateResult(Developer dev, Estate selEstate) {
+        if (selEstate != null) {
+            dev.removeEstate(selEstate);
+            System.out.println("Successfully removed the estate");
+        } else
+            System.out.println("Failed to removed the estate");
+    }
+
+    static Estate findExistingEstate() {
+        List<String> estateData = Estate.enterBlockName();
+        for (Estate estate : Estate.allExistingEstates)
+            if (estate.name.equals(estateData.get(0)))
+                return estate;
+        System.out.println("Entered estate is not exists");
+        return null;
+    }
+
+    private static Estate createEstate() {
+        List<String> placeData = Estate.enterBlockName();
+        return new Estate(placeData.get(0));
+    }
+
+    private static List<String> enterBlockName() {
+        System.out.print("Enter estate name: ");
+        String name = Main.getScan().next();
+
+        return Arrays.asList(name);
     }
 
     public static void addEstateToExisting(Estate estate) {
@@ -46,62 +91,20 @@ public class Estate {
         Estate.allExistingEstates.remove(estate);
     }
 
-    public void removePlace(Place place) {
-        this.places.remove(place);
-    }
-
-    public static void showEstateOptions(Developer dev) {
-        System.out.println("\nSelect estate:");
-        System.out.println("20 - add estate");
-        if (Estate.allExistingEstates.size() > 0) {
-            System.out.println("21 - remove estate");
-            System.out.println("------------------");
-            System.out.println("Existing estates:");
-            for (int i = 0; i < dev.estatesSize(); i++)
-                System.out.println(i + " - " + dev.getEstate(i).name);
-        } else
-            System.out.println("No places available yet");
-
-    }
-
-    public static Estate selEstateOption(int choice, Developer dev) {
-        Estate selEstate;
-        if (choice == 20) {
-            selEstate = Estate.createEstate();
-            dev.addEstate(selEstate);
-            return selEstate;
-        } else if (choice == 21 && Estate.allExistingEstates.size() > 0) {
-            selEstate = Estate.findExistingEstate();
-            if (selEstate != null)
-                dev.removeEstate(selEstate);
-        } else
-            return dev.getEstate(choice);
-        return selEstate;
-    }
-
-    private static Estate findExistingEstate() {
-        List<String> estateData = Estate.enterEstateName();
-        for (Estate estate : Estate.allExistingEstates)
-            if (estate.name.equals(estateData.get(0)))
-                return estate;
-        System.out.println("Entered estate is not exists");
-        return null;
-    }
-
-    private static Estate createEstate() {
-        List<String> placeData = Estate.enterEstateName();
-        return new Estate(placeData.get(0));
-    }
-
-    private static List<String> enterEstateName() {
-        System.out.print("Enter estate name: ");
-        String name = Main.getScan().next();
-
-        return Arrays.asList(name);
+    public static Estate readyEstate() {
+        return new Estate("Żoliborz");
     }
 
     public String getName() {
-        return name;
+        return this.name;
+    }
+
+    public Block getBlock(int index) {
+        return this.blocks.get(index);
+    }
+
+    public int blocksCount() {
+        return this.blocks.size();
     }
 
 }
