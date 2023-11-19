@@ -78,13 +78,6 @@ public class Block {
         block.assignedPlaces.addAll(places);
     }
 
-    private static List<String> enterEstateName() {
-        System.out.print("Enter estate name: ");
-        String name = Main.getScan().next();
-
-        return Arrays.asList(name);
-    }
-
     public static Block readyBlock() {
         return new Block("Block2115");
     }
@@ -111,6 +104,10 @@ public class Block {
 
     public static int allExistingBlocksSize() {
         return Block.allExistingBlocks.size();
+    }
+
+    public Place getAssignedPlace(int index) {
+        return this.assignedPlaces.get(index);
     }
 
     public void removePlace(Place place) {

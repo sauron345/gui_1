@@ -22,6 +22,13 @@ public class Amphibian extends Vehicle {
         this.armorThickness = this.enterArmorThickness();
     }
 
+    @Override
+    public void showSpecificThingDetails() {
+        super.showThingDetails();
+        System.out.println("Armor thickness: " + this.armorThickness);
+        System.out.println("Tires type: " + this.tiresType);
+    }
+
     protected static Amphibian createWithVolumeParams(List<String> thingData, List<String> vehicleData) {
         return new Amphibian(thingData.get(1), Integer.parseInt(thingData.get(2)),
             Integer.parseInt(thingData.get(3)), Integer.parseInt(thingData.get(4)),

@@ -59,7 +59,7 @@ public class Estate {
     }
 
     static Estate findExistingEstate() {
-        List<String> estateData = Estate.enterBlockName();
+        List<String> estateData = Estate.enterEstateName();
         for (Estate estate : Estate.allExistingEstates)
             if (estate.name.equals(estateData.get(0)))
                 return estate;
@@ -68,11 +68,11 @@ public class Estate {
     }
 
     private static Estate createEstate() {
-        List<String> placeData = Estate.enterBlockName();
+        List<String> placeData = Estate.enterEstateName();
         return new Estate(placeData.get(0));
     }
 
-    private static List<String> enterBlockName() {
+    private static List<String> enterEstateName() {
         System.out.print("Enter estate name: ");
         String name = Main.getScan().next();
 

@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 abstract class Vehicle extends Thing {
@@ -43,7 +42,7 @@ abstract class Vehicle extends Thing {
         vehicleData.add(Main.getScan().next());
 
         System.out.println("Enter vehicle type");
-        vehicleData.add(Vehicle.getVehicleType());
+        vehicleData.add(Vehicle.enterVehicleType());
 
         System.out.print("Enter engine type: ");
         vehicleData.add(Main.getScan().next());
@@ -60,19 +59,20 @@ abstract class Vehicle extends Thing {
         System.out.println("Sold vehicles: " + this.getSoldVehicles());
     }
 
+    abstract public void showSpecificThingDetails();
+
     protected static Vehicle createVehicle(List<String> thingData) {
         List<String> vehicleData = Vehicle.enterVehicleReqParams();
         String chosenType = vehicleData.get(1);
         return Vehicle.getChosenVehicleType(chosenType, thingData, vehicleData);
     }
-
-    private static Vehicle getChosenVehicleType(String chosenVehicleType, List<String>thingData, List<String>vehicleData) {
-        return switch (chosenVehicleType) {
-            case "Amphibian" -> Amphibian.create(thingData, vehicleData);
-            case "Motorcycle" -> Motorcycle.create(thingData, vehicleData);
-            case "OffRoad" -> OffRoad.create(thingData, vehicleData);
-            case "Boat" -> Boat.create(thingData, vehicleData);
-            case "CityCar" -> CityCar.create(thingData, vehicleData);
+    private static Vehicle getChosenVehicleType(String chosenType, List<String>thingData, List<String>vehicleData) {
+        return switch (chosenType) {
+            case "Boat" -> Amphibian.create(thingData, vehicleData);
+            case "City Car" -> Motorcycle.create(thingData, vehicleData);
+            case "Motorcycle" -> OffRoad.create(thingData, vehicleData);
+            case "Off Road" -> Boat.create(thingData, vehicleData);
+            case "Amphibian" -> CityCar.create(thingData, vehicleData);
             default -> null;
         };
     }
@@ -101,24 +101,22 @@ abstract class Vehicle extends Thing {
             return Vehicle.displaySoldVehicles();
     }
 
-/*    protected static String selVehicleType() {
-        Vehicle.displayAvailableVehicles();
-        int choice = Main.getScan().nextInt();
-        return Vehicle.availableTypes[choice];
-    }*/
-
-    protected static String getVehicleType() {
+    protected static String enterVehicleType() {
         Vehicle.displayAvailableVehicles();
         int choice = Main.getScan().nextInt();
         return Vehicle.availableTypes[choice];
     }
 
-    public void addToUtilization() {
-        Vehicle.addSoldVehicle(this);
+    public void displayStoredThing(int i) {
+        System.out.println(i + " - (Vehicle) " + this.getName());
     }
 
-    public static void addSoldVehicle(Thing thing) {
-        Vehicle.soldVehicles.add(thing);
+    private void addSoldVehicle() {
+        Vehicle.soldVehicles.add(this);
+    }
+
+    public void getRidOfThing() {
+        this.addSoldVehicle();
     }
 
     public static boolean checkSoldVehiclesIsEmpty() {
@@ -130,6 +128,8 @@ abstract class Vehicle extends Thing {
     }
 
     public String getEngineType() {
+        if (engineType == null)
+            return "none";
         return engineType;
     }
 

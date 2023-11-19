@@ -1,5 +1,5 @@
 public class ProblematicTenantException extends RuntimeException {
-    public ProblematicTenantException(String personName) {
-        super("Person " + personName + " already had 5 rooms rent");
+    public ProblematicTenantException(Person person) {
+        super("Person " + person.getName() + " already has rented places: " + person.getRentedPlaces());
     }
 }

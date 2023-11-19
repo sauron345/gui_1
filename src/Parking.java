@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,10 +18,26 @@ public class Parking extends Place {
     }
 
     @Override
+    void rentInitial(Person person, LocalDate rentEnd) {
+        if (person.rentedPlacesSize() <= 5) {
+            this.tenant = person;
+
+            this.rentStart = DateUpdater.getCurrDate();
+            this.rentEnd = rentEnd;
+            Place.addToAllRentedPlaces(this);
+            person.addRentedPlace(this);
+
+            System.out.println("\nSuccessfully added tenant\n");
+            person.selPersonActions(this);
+        } else
+            System.out.println("Rented places are greater than 5");
+    }
+
+    @Override
     public void selectedPlaceDetails() {
-        this.showStoredThings();
+        this.showParkingActions();
         String choice = Main.getScan().next();
-        Thing.selThingOption(choice, this);
+        this.selParkingAction(choice);
     }
 
     @Override
@@ -30,18 +47,17 @@ public class Parking extends Place {
     }
 
     private void displayParkingDetails() {
-        this.displayStoredThings();
+        this.getStoredThings();
         System.out.println("Available space: " + this.getAvailableSpace());
     }
 
     @Override
     protected void clearPlace() {
         this.clearStoredThings();
-        this.rentEnd = null;
-        this.rentStart = null;
-        this.removeStoredThings();
-        this.availableSpace = this.currFreeSpace();
+        this.clearRentStart();
         this.clearRentEnd();
+        this.removeStoredThings();
+        this.clearArea();
         this.tenant.rentAfterTime = false;
         this.tenant.removeRentedPlace(this);
         this.removeTenant();
@@ -50,43 +66,70 @@ public class Parking extends Place {
     private void clearStoredThings() {
         for (int i = 0; i < this.storedThingsSize(); i++) {
             Thing storedThing = this.storedThings.get(i);
-            Thing.addToUtilization(storedThing);
+            storedThing.getRidOfThing();
             this.storedThings.remove(storedThing);
         }
     }
 
+    public void selParkingAction(String choice) {
+        switch (choice) {
+            case "d" -> this.showPlaceDetails();
+            case "a" -> this.addParkingTenant();
+            case "t" -> this.tenant.selPersonActions(this);
+            default -> this.selectedStoredThing(choice);
+        }
+    }
+
+    protected String showRentedPlaceDetails() {
+        return "\n - " + this.getName() + " Parking" + "(" + this.showPlaceContent() + ")"
+                + "\n\t-> valid until: " + this.getRentEnd();
+    }
+
+    protected void selectedStoredThing(String choice) {
+        Thing selThing = this.getStoredThing(Integer.parseInt(choice));
+        System.out.println("Selected thing: " + selThing.name);
+        selThing.showSpecificThingDetails();
+    }
+
+    public Thing showStoredThings() {
+        System.out.println("Stored things in " + this.getName() + "\n");
+        for (int i = 0; i < this.storedThingsSize(); i++)
+            this.getStoredThing(i).displayStoredThing(i);
+
+        int choice2 = Main.getScan().nextInt();
+        return this.getStoredThing(choice2);
+    }
+
     private Thing[] getSortedThings() {
         Thing[] sortedThings = new Thing[this.storedThingsSize()];
-        for (int i = 0; i < this.storedThingsSize(); i++) {
-            if (this.storedThingsSize() > 1) {
-                for (int j = i; j < this.storedThingsSize() - 1; j++) {
-                    if (getStoredThing(j).getArea() < getStoredThing(j + 1).getArea())
-                        this.sortThingsBySize(sortedThings, j);
-                    else if (getStoredThing(j).getArea() == getStoredThing(j + 1).getArea())
-                        this.sortThingsByName(sortedThings, j);
+        if (this.storedThingsSize() > 1)
+            for (int i = 0; i < this.storedThingsSize() - 1; i++) {
+                for (int j = i + 1; j < this.storedThingsSize(); j++) {
+                    if (getStoredThing(i).getArea() < getStoredThing(j).getArea())
+                        this.sortThingsBySize(sortedThings, i, j);
+                    else if (getStoredThing(i).getArea() == getStoredThing(j).getArea())
+                        this.sortThingsByName(sortedThings, i, j);
+                    else {
+                        sortedThings[i] = getStoredThing(i);
+                        sortedThings[j] = getStoredThing(j);
+                    }
                 }
-            } else
-                sortedThings[0] = getStoredThing(0);
-        }
+            }
+        else if (this.storedThingsSize() == 1)
+            sortedThings[0] = this.getStoredThing(0);
         return sortedThings;
     }
 
-    private void sortThingsBySize(Thing[] sortedThings, int j) {
-        sortedThings[j] = getStoredThing(j + 1);
-        sortedThings[j + 1] = getStoredThing(j);
+    private void sortThingsBySize(Thing[] sortedThings, int i, int j) {
+        sortedThings[i] = getStoredThing(j);
+        sortedThings[j] = getStoredThing(i);
     }
 
-    private void sortThingsByName(Thing[] sortedThings, int j) {
-        int result = getStoredThing(j).getName().compareTo(getStoredThing(j + 1).getName());
-        if (result < 0) {
-            sortedThings[j] = getStoredThing(j);
-            sortedThings[j + 1] = getStoredThing(j + 1);
-        } else if (result > 0) {
-            sortedThings[j] = getStoredThing(j + 1);
-            sortedThings[j + 1] = getStoredThing(j);
-        } else {
-            sortedThings[j] = getStoredThing(j);
-            sortedThings[j + 1] = getStoredThing(j + 1);
+    private void sortThingsByName(Thing[] sortedThings, int i, int j) {
+        int result = getStoredThing(i).getName().compareTo(getStoredThing(j).getName());
+        if (result > 0) {
+            sortedThings[i] = getStoredThing(j);
+            sortedThings[j] = getStoredThing(i);
         }
     }
 
@@ -94,29 +137,24 @@ public class Parking extends Place {
     public String showPlaceContent() {
         Thing[] sortedThings = getSortedThings();
         String thingsList = "| ";
-        if (this.livingPersonsSize() > 0)
-            for (int i = 0; i < sortedThings.length; i++)
-                thingsList += sortedThings[i].getName() + " | ";
+        if (this.storedThingsSize() > 0)
+            for (int i = 0; i < sortedThings.length; i++) {
+                if (sortedThings[i] != null)
+                    thingsList += sortedThings[i].getName() + " | ";
+                else
+                    return "nothing inside yet";
+            }
         else
             return "nothing inside yet";
         return thingsList.trim();
     }
 
     public void storeThing(Thing thing) throws TooManyThingsException {
-        this.availableSpace = this.currFreeSpace();
-        if (thing.getArea() <= this.availableSpace)
+        this.availableSpace = this.decreaseFreeSpace(thing.getArea());
+        if (this.availableSpace >= 0)
             this.storedThings.add(thing);
         else
             throw new TooManyThingsException();
-    }
-
-    private int currFreeSpace() {
-        if (this.storedThingsSize() > 0)
-            for (Thing storeThing : this.storedThings)
-                this.availableSpace -= storeThing.getArea();
-        else
-            this.availableSpace = this.getVolume();
-        return this.availableSpace;
     }
 
     public void addParkingTenant() {
@@ -124,44 +162,30 @@ public class Parking extends Place {
             Person.showAllExistingTenants();
             int choice = Main.getScan().nextInt();
             Person regPerson = Person.getExistingPerson(choice);
-            this.rentalConfig(regPerson);
+            this.startRental(regPerson);
         } else
             System.out.println("Not found any tenant");
     }
 
-    public static void addThing(Parking selParking) throws TooManyThingsException {
-        System.out.print("Thing:\n1 - create new ");
-        int choice = Main.getScan().nextInt();
-        Thing storeThing;
-
-        if (choice == 1) {
-            storeThing = Thing.createThing();
-            if (storeThing != null) {
-                selParking.storedThings.add(storeThing);
-                Thing.addThingToExisting(storeThing);
-                System.out.println("Successfully added new thing");
-            }
-        }
-    }
-
-    public void showStoredThings() {
+    public void showParkingActions() {
         System.out.println("\nSelect thing stored in " + this.getName() + ":");
-        System.out.println("15 - Parking details");
+        System.out.println("d - Parking details");
 
         if (this.getTenant() == null)
-            System.out.println("9 - Add tenant");
+            System.out.println("a - Add tenant");
         else {
-            System.out.println("t - (Tenant) " + this.getTenant().getName());
+            System.out.println("t - (Tenant) " + this.tenant.getName());
             System.out.println("------------------");
-            System.out.println("Stored things: " + this.getStoredThings());
+            this.getStoredThings();
 
         }
     }
 
-    private String getStoredThings() {
+    private void getStoredThings() {
+        System.out.print("Stored things: ");
         if (this.storedThings.isEmpty())
-            return "nothing stored yet";
-        return existingThings();
+            System.out.println("nothing stored yet");
+        System.out.println(existingThings());
     }
 
     private String existingThings() {
@@ -178,7 +202,7 @@ public class Parking extends Place {
             case 2 -> selTenant.removeThing(this);
             case 3 -> selTenant.cancelRental(this);
             case 4 -> selTenant.renewRental(this);
-            case 5 -> this.displayStoredThings();
+            case 5 -> this.getStoredThings();
             case 6 -> selTenant.showPersonDetails();
             default -> System.out.println("Entered digit does not have an action");
         }
@@ -202,26 +226,13 @@ public class Parking extends Place {
         block.assignPlace(Arrays.asList(parking, parking2, parking3, parking4));
     }
 
-    public Parking chosenParking(Person selTenant) {
-        if (selTenant.rentedPlacesSize() > 0) {
-            System.out.println("Select parking:");
-            for (int i = 0; i < selTenant.rentedPlacesSize(); i++)
-                if (selTenant.getRentedPlace(i) instanceof Parking)
-                    System.out.println(i + " - " + selTenant.getRentedPlace(i).getName());
-            int choice = Main.getScan().nextInt();
-
-            return (Parking) selTenant.getRentedPlace(choice);
-        }
-        return null;
+    private void clearArea() {
+        this.availableSpace = this.getVolume();
     }
 
-    public void displayStoredThings() {
-        System.out.print("Stored things:");
-        if (this.storedThings.size() > 0)
-            for (int i = 0; i < this.storedThings.size(); i++)
-                System.out.println("\n- " + this.storedThings.get(i).getName());
-        else
-            System.out.println(" nothing stored yet");
+    private int decreaseFreeSpace(int areaThing) {
+        this.availableSpace -= areaThing;
+        return this.availableSpace;
     }
 
     private void removeStoredThings() {
