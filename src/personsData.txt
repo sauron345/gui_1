@@ -44,23 +44,27 @@ Rented places: none
 Tenant letters details: not tenant
 -------------------------------------
 id: 6
-name: sebson wieczorek
+name: sebson kowalski
 pesel: 123
-address: abc 456
+address: elblasg 12
 is tenant: true
-birthday: 2000-12-12
-Rented places: none
+birthday: 2003-12-12
+Rented places: 
+ - parking1 Parking(| kowadlo |)
+	-> valid until: 2023-12-12
+ - room1 Apartment(| piotrek rabantek |)
+	-> valid until: 2023-12-12
 Tenant letters details: 
-0 - (Received: 2023-12-13) Dear sebson wieczorek, We would like to inform you that the rental of apartment room1 has been terminated. Please leave the apartment or extend the contract.
-1 - (Received: 2023-12-13) Dear sebson wieczorek, We would like to inform you that the rental of apartment parking1 has been terminated. Please leave the apartment or extend the contract.
+0 - (Received: 2023-12-13) Dear sebson kowalski, We would like to inform you that the rental of apartment room1 has been terminated. Please leave the apartment or extend the contract.
+1 - (Received: 2023-12-13) Dear sebson kowalski, We would like to inform you that the rental of apartment parking1 has been terminated. Please leave the apartment or extend the contract.
 
 -------------------------------------
 id: 7
-name: damian wieczorek
+name: piotrek rabantek
 pesel: 123
-address: aabc 345
+address: abc 123
 is tenant: false
-birthday: 2000-12-12
+birthday: 2003-12-12
 Rented places: none
 Tenant letters details: not tenant
 -------------------------------------

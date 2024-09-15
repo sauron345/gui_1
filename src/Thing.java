@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class Thing {
     protected String name;
@@ -18,7 +17,7 @@ public class Thing {
         this.area = height * width * length;
     }
 
-    public void showThingDetails() {
+    public void showSpecificThingDetails() {
         System.out.println("Name: " + this.name);
         System.out.println("Area: " + this.area);
         System.out.println("Things to utilization: " + this.getSoldVehicles());
@@ -31,6 +30,10 @@ public class Thing {
             return Thing.displayThingsToUtilization();
     }
 
+    public void getRidOfThing() {
+        this.addToUtilization();
+    }
+
     private static String displayThingsToUtilization() {
         String thingsToUtilizationList = "";
         for (int i = 0; i < Thing.thingsToUtilization.size(); i++)
@@ -38,48 +41,9 @@ public class Thing {
         return thingsToUtilizationList;
     }
 
-    public static void selThingOption(String choice, Parking selPlace) {
-        if (choice.equals("15")) {
-            selPlace.showPlaceDetails();
-        } else if (choice.equals("9"))
-            selPlace.addParkingTenant();
-        else if (choice.equals("20"))
-            Parking.addThing(selPlace);
-        else if (choice.equals("t")) {
-            selPlace.tenant.selPersonActions(selPlace);
-        } else {
-            Thing selThing = selPlace.getStoredThing(Integer.parseInt(choice));
-            System.out.println("Selected thing: " + selThing.name);
-            selThing.showThingDetails();
-        }
-    }
 
-/*    public static Thing findExistingThing() {
-        List<String> ThingData = Thing.enterThingData();
-        int same = 0;
-        for (Thing thing : Thing.allExistingThings) {
-            if (thing.name.equals(ThingData.get(0) + " " + ThingData.get(1)))
-                same++;
-            if (thing.area == Integer.parseInt(ThingData.get(2)))
-                same++;
-            if (same == 2)
-                return thing;
-        }
-        System.out.println("Entered thing is not exists");
-        return null;
-    }*/
-
-
-    public static Thing selThing(Parking selParking) {
-        System.out.println("Stored things in " + selParking.getName() + "\n");
-        for (int i = 0; i < selParking.storedThingsSize(); i++) {
-            if (selParking.getStoredThing(i) instanceof Vehicle)
-                System.out.println(i + " - (Vehicle) " + selParking.getStoredThing(i).getName());
-            else
-                System.out.println(i + " - " + selParking.getStoredThing(i).getName());
-        }
-        int choice2 = Main.getScan().nextInt();
-        return selParking.getStoredThing(choice2);
+    public void displayStoredThing(int i) {
+        System.out.println(i + " - " + this.getName());
     }
 
     public static List<String> enterThingData() {
@@ -137,8 +101,8 @@ public class Thing {
                 Integer.parseInt(thingData.get(3)), Integer.parseInt(thingData.get(4)));
     }
 
-    public static void addToUtilization(Thing thing) {
-        Thing.thingsToUtilization.add(thing);
+    public void addToUtilization() {
+        Thing.thingsToUtilization.add(this);
     }
 
     public static void addThingToExisting(Thing thing) {

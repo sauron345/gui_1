@@ -26,6 +26,12 @@ public class CityCar extends Vehicle {
             Integer.parseInt(vehicleData.get(0)), vehicleData.get(1), vehicleData.get(2));
     }
 
+    @Override
+    public void showSpecificThingDetails() {
+        super.showThingDetails();
+        System.out.println("Spoiler shape: " + this.spoilerShape);
+    }
+
     private String enterSpoilerShape() {
         System.out.print("Enter spoiler shape: ");
         return Main.getScan().next();

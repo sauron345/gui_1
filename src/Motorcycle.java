@@ -26,6 +26,12 @@ public class Motorcycle extends Vehicle {
             Integer.parseInt(vehicleData.get(0)), vehicleData.get(1), vehicleData.get(2));
     }
 
+    @Override
+    public void showSpecificThingDetails() {
+        super.showThingDetails();
+        System.out.println("Stand size: " + this.standSize);
+    }
+
     private int enterStandSize() {
         System.out.print("Enter stand size: ");
         return Main.getScan().nextInt();

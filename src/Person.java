@@ -24,16 +24,13 @@ public class Person {
 
     private void registerPerson(Person person, Place place) {
         if (isTenant) {
-            if (rentedPlaces.contains(place) && rentedPlaces.size() <= 5) {
-                if (place.checkLivingPersonExists(person))
-                    System.out.println("Person " + person.name + " is already register");
-                else {
-                    place.addPersonToPlace(person);
-                    Person.allExistingPersons.add(person);
-                    System.out.println("Person " + person.name + " is successfully added");
-                }
-            } else
-                System.out.println("Place is not exists or rented places are greater than 5");
+            if (place.checkLivingPersonExists(person))
+                System.out.println("Person " + person.name + " is already register");
+            else {
+                place.addPersonToPlace(person);
+                Person.allExistingPersons.add(person);
+                System.out.println("Person " + person.name + " is successfully added");
+            }
         } else
             System.out.println("You don't have possibility to register the person");
     }
@@ -57,7 +54,7 @@ public class Person {
 
     public void removeThing(Parking selParking) {
         if (selParking != null) {
-            Thing selThing = Thing.selThing(selParking);
+            Thing selThing = selParking.showStoredThings();
             if (isTenant && rentedPlaces.contains(selParking)) {
                 if (selParking.checkStoredThingExists(selThing)) {
                     selParking.removeStoredThing(selThing);
@@ -90,7 +87,7 @@ public class Person {
 
     private void clearExistingLettersFor(Place selPlace) {
         for (TenantLetter tenantLetter : this.letters)
-            if (tenantLetter.getPlace().hashCode() == selPlace.hashCode())
+            if (tenantLetter.getPlaceName().hashCode() == selPlace.hashCode())
                 this.removeLetter(tenantLetter);
     }
 
@@ -226,14 +223,6 @@ public class Person {
             return "not tenant";
     }
 
-/*    public String displayLettersToFile(PrintWriter save) {
-        if (this.isTenant && this.lettersSize() > 0) {
-            for (int i = 0; i < this.lettersSize(); i++)
-                save.println(i + " - " + this.readSpecificLetter(i));
-        } else
-            save.println("");
-    }*/
-
     public void showPersonDetails() {
         System.out.println("Id: " + this.id);
         System.out.println("Name: " + this.name);
@@ -241,33 +230,16 @@ public class Person {
         System.out.println("Address: " + this.address);
         System.out.println("Pesel: " + this.pesel);
         System.out.println("Birthday: " + this.birthday);
-        System.out.println("Rented places: " + this.displayRentedPlaces());
+        System.out.println("Rented places: " + this.getRentedPlaces());
         System.out.print("Tenant letters details: " + this.displayLetters());
     }
 
-    private String displayRentedPlaces() {
-        if (this.isTenant) {
-            if (this.rentedPlaces.isEmpty())
-                return "none";
-            else
-                return this.getRentedPlaces();
-        } else
-            return "You are not tenant to see rented places";
-    }
-
     public String getRentedPlaces() {
-        String placeType = "";
         String tempRentedPlaces = "";
         Place[] rentedPlaces = this.getSortedPlaces();
         if (this.rentedPlacesSize() > 0)
-            for (int i = 0; i < rentedPlaces.length; i++) {
-                if (rentedPlaces[i] instanceof Apartment)
-                    placeType = "Apartment";
-                else
-                    placeType = "Parking";
-                tempRentedPlaces += "\n- " + rentedPlaces[i].getName() + " " +  placeType + "(" + rentedPlaces[i].showPlaceContent() + ")"
-                    + "\n\t-> valid until: " + rentedPlaces[i].getRentEnd();
-            }
+            for (int i = 0; i < this.rentedPlacesSize(); i++)
+                tempRentedPlaces += rentedPlaces[i].showRentedPlaceDetails();
         else
             return "none";
         return tempRentedPlaces;
@@ -275,34 +247,21 @@ public class Person {
 
     private Place[] getSortedPlaces() {
         Place[] sortedPlaces = new Place[this.rentedPlacesSize()];
-        for (int i = 0; i < this.rentedPlacesSize(); i++)
-            if (this.rentedPlacesSize() > 1) {
-                for (int j = i; j < this.rentedPlacesSize() - 1; j++)
-                    if (this.getRentedPlace(j).volume > this.getRentedPlace(j + 1).volume) {
-                        sortedPlaces[j] = this.getRentedPlace(j + 1);
-                        sortedPlaces[j + 1] = this.getRentedPlace(j);
+        if (this.rentedPlacesSize() > 1)
+            for (int i = 0; i < this.rentedPlacesSize() - 1; i++) {
+                System.out.println(this.rentedPlaces.get(i).getName());
+                for (int j = i + 1; j < this.rentedPlacesSize(); j++)
+                    if (this.getRentedPlace(i).volume > this.getRentedPlace(j).volume) {
+                        sortedPlaces[i] = this.getRentedPlace(j);
+                        sortedPlaces[j] = this.getRentedPlace(i);
+                    } else {
+                        sortedPlaces[i] = this.getRentedPlace(i);
+                        sortedPlaces[j] = this.getRentedPlace(j);
                     }
-            } else
+            } else if (this.rentedPlacesSize() == 1)
                 sortedPlaces[0] = this.getRentedPlace(0);
         return sortedPlaces;
     }
-
-/*
-    public void checkRentedPlacesValidity() throws ParseException {
-        for (int place = 0; place < this.rentedPlaces.length; place++) {
-            int compareDates = this.rentedPlaces[place].rentEnd.compareTo(Main.currDate);
-            if (compareDates > 0)
-                this.rentedPlaceAfterTime(place);
-        }
-    }
-
-    private void rentedPlaceAfterTime(int place) throws ParseException {
-        Person tenant = this.rentedPlaces[place].tenant;
-        Arrays.asList(tenant.letters).add(
-            new TenantLetter(tenant.name, this.rentedPlaces[place]
-        ));
-    }
-*/
 
     public static void showAllExistingTenants() {
         System.out.println("Existing tenants:");

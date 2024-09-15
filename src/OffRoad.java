@@ -26,6 +26,12 @@ public class OffRoad extends Vehicle {
             Integer.parseInt(vehicleData.get(0)), vehicleData.get(1), vehicleData.get(2));
     }
 
+    @Override
+    public void showSpecificThingDetails() {
+        super.showThingDetails();
+        System.out.println("High suspension size: " + this.highSuspensionSize);
+    }
+
     private int enterHighSuspensionSize() {
         System.out.print("Enter size of high suspension: ");
         return Main.getScan().nextInt();

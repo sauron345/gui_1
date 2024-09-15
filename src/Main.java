@@ -68,16 +68,6 @@ class Main extends DateUpdater {
         return volume;
     }
 
-   /* private static Object availableOptions(Scanner scan, List<?> list, int choice) {
-        try {
-            choice = scan.nextInt();
-            selEstate = estates.get(choice);
-        } catch (IndexOutOfBoundsException e) {
-            System.out.println("Selected digit has nothing to offer");
-            continue;
-        }
-    }*/
-
     public static Developer getDevs(int index) {
         return devs.get(index);
     }

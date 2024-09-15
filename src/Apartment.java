@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.Arrays;
 
 public class Apartment extends Place {
@@ -12,8 +13,25 @@ public class Apartment extends Place {
     }
 
     @Override
+    void rentInitial(Person person, LocalDate rentEnd) {
+        if (person.rentedPlacesSize() <= 5) {
+            this.tenant = person;
+            this.setPersonPayRent(person);
+
+            this.rentStart = DateUpdater.getCurrDate();
+            this.rentEnd = rentEnd;
+            Place.addToAllRentedPlaces(this);
+            person.addRentedPlace(this);
+
+            System.out.println("\nSuccessfully added tenant\n");
+            person.selPersonActions(this);
+        } else
+            System.out.println("Rented places are greater than 5");
+    }
+
+    @Override
     public void selectedPlaceDetails() {
-        this.showPersonsLiving();
+        this.showApartActions();
         String choice = Main.getScan().next();
         this.selPersonLiving(choice);
     }
@@ -50,13 +68,14 @@ public class Apartment extends Place {
         return livingPersonsList.trim();
     }
 
-    private void displayLivingPersons() {
-        System.out.println("Living persons:");
+    private String getLivingPersons() {
+        String livingPersonsList = "";
         for (int i = 0; i < this.livingPersonsSize(); i++)
-            System.out.println(i + 1  + " - " + this.getLivingPerson(i).getName());
+            livingPersonsList += i  + " - " + this.getLivingPerson(i).getName();
+        return livingPersonsList;
     }
 
-    public void showPersonsLiving() {
+    public void showApartActions() {
         System.out.println("\nSelect person living in " + this.getName() + ":");
         System.out.println("d - Apartment details");
         if (this.checkLivingPersonsIsEmpty() && this.tenant == null) {
@@ -65,10 +84,13 @@ public class Apartment extends Place {
         } else {
             System.out.println("------------------");
             System.out.println("t - (Tenant) " + this.tenant.getName());
-            System.out.println("Living persons:");
-            for (int i = 0; i < this.livingPersonsSize(); i++)
-                System.out.println(i + " - " + this.getLivingPerson(i).getName());
+            System.out.println("Living persons:\n" + this.getLivingPersons());
         }
+    }
+
+    protected String showRentedPlaceDetails() {
+        return "\n - " + this.getName() + " Apartment" + "(" + this.showPlaceContent() + ")"
+                + "\n\t-> valid until: " + this.getRentEnd();
     }
 
     public void addApartTenant() {
@@ -82,7 +104,7 @@ public class Apartment extends Place {
         if (choice == 1) {
             tenant = Person.createPerson();
             Person.addPersonToExisting(tenant);
-            this.rentalConfig(tenant);
+            this.startRental(tenant);
         } else if (choice == 2 && Person.allExistingPersonsSize() > 0) {
             tenant = Person.findExistingPerson();
             if (tenant != null)
@@ -92,7 +114,7 @@ public class Apartment extends Place {
 
     private void foundedTenant(Person tenant) {
         System.out.println("Person is found");
-        this.rentalConfig(tenant);
+        this.startRental(tenant);
     }
 
     public static void readyAparts(Block block) {
@@ -107,8 +129,7 @@ public class Apartment extends Place {
 
     @Override
     protected void clearPlace() {
-        this.rentEnd = null;
-        this.rentStart = null;
+        this.clearRentStart();
         this.clearRentEnd();
         this.clearLivingPersons();
         this.removePersonPayRent();
@@ -123,7 +144,7 @@ public class Apartment extends Place {
         if (this.livingOrdinaryPersons.isEmpty())
             System.out.println("Living persons: none");
         else
-            this.displayLivingPersons();
+            System.out.println("Living persons:\n " + this.getLivingPersons());
     }
 
     @Override
@@ -150,10 +171,8 @@ public class Apartment extends Place {
     public Person selectPerson() {
         if (this.livingPersonsSize() > 0) {
             System.out.println("Living persons in " + this.getName());
-            for (int i = 0; i < this.livingPersonsSize(); i++)
-                System.out.println(i + " - " + this.getLivingPerson(i).getName());
+            System.out.println(this.getLivingPersons());
             int choice = Main.getScan().nextInt();
-
             return this.getLivingPerson(choice);
         }
         return null;

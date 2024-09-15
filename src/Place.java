@@ -28,24 +28,29 @@ abstract public class Place {
         this.name = name;
     }
 
-    private void startRental(Person person) {
-        LocalDate rentEnd = person.enterPersonRentEnd();
-
+    protected void startRental(Person person) {
         if (person.isTenant() && person.lettersCount() >= 3)
-            throw new ProblematicTenantException(person.getName());
-
-        if (person.isTenant() && !person.checkRentedPlaceExists(this) && person.rentedPlacesSize() <= 5)
+            throw new ProblematicTenantException(person);
+        if (!person.isTenant())
+            person.setPersonAsTenant();
+        if (person.isTenant() && !person.checkRentedPlaceExists(this) && person.rentedPlacesSize() <= 5) {
+            LocalDate rentEnd = person.enterPersonRentEnd();
             this.rentInitial(person, rentEnd);
+        }
     }
 
-    public void rentedPlaceAfterTime(int i) {
+    public void rentedPlaceAfterTime() {
         if (this.rentAfterTime)
             this.checkExceedLetterDate();
         else {
-            this.tenantLetter = new TenantLetter(this.tenant.getName(), Place.getRentedPlace(i));
-            this.tenant.addLetter(this.tenantLetter);
+            this.createTenantLetter();
             this.rentAfterTime = true;
         }
+    }
+
+    private void createTenantLetter() {
+        this.tenantLetter = new TenantLetter(this.tenant.getName(), this.name);
+        this.tenant.addLetter(this.tenantLetter);
     }
 
     private void checkExceedLetterDate() {
@@ -53,33 +58,14 @@ abstract public class Place {
         if (compareDifferentDates > 30) {
             this.clearPlace();
             System.out.println("Time has passed, tenant: " + this.tenantLetter.getPersonName() +
-                ", has been removed from " + this.tenantLetter.getPlace().getName());
+                ", has been removed from " + this.tenantLetter.getPlaceName());
             this.removeTenantLetter();
         }
     }
 
-    private void rentInitial(Person person, LocalDate rentEnd) {
-        this.tenant = person;
+    abstract protected String showRentedPlaceDetails();
 
-        this.rentStart = DateUpdater.getCurrDate();
-        this.rentEnd = rentEnd;
-        Place.addToAllRentedPlaces(this);
-        person.addRentedPlace(this);
-
-        if (this instanceof Apartment)
-            ((Apartment) this).setPersonPayRent(person);
-
-        System.out.println("\nSuccessfully added tenant\n");
-        person.selPersonActions(this);
-    }
-
-    protected void rentalConfig(Person regPerson) {
-        if (this instanceof  Apartment)
-            ((Apartment) this).setPersonPayRent(regPerson);
-        if (!regPerson.isTenant())
-            regPerson.setPersonAsTenant();
-        this.startRental(regPerson);
-    }
+    abstract void rentInitial(Person person, LocalDate rentEnd);
 
     private static List<String> enterExistingPlaceData() {
         System.out.print("Enter place name: ");
@@ -154,14 +140,14 @@ abstract public class Place {
             LocalDate rentEnd = rentedPlace.getRentEnd();
 
             if (rentStart != null && rentEnd != null)
-                rentedPlace.checkRentedPlace(i);
+                rentedPlace.checkRentedPlace();
         }
     }
 
-    private void checkRentedPlace(int i) {
+    private void checkRentedPlace() {
         boolean RentAfterTime = DateUpdater.getCurrDate().isAfter(this.rentEnd);
         if (RentAfterTime)
-            this.rentedPlaceAfterTime(i);
+            this.rentedPlaceAfterTime();
     }
 
     public static void showPlaceOptions(Block selBlock) {
@@ -235,6 +221,10 @@ abstract public class Place {
 
     protected void clearRentEnd() {
         this.rentEnd = null;
+    }
+
+    protected void clearRentStart() {
+        this.rentStart = null;
     }
 
     public void clearLivingPersons() {
